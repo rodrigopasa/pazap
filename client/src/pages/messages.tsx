@@ -256,11 +256,17 @@ export default function Messages() {
                           <SelectValue placeholder="Selecione uma sessão" />
                         </SelectTrigger>
                         <SelectContent>
-                          {connectedSessions.map((session: any) => (
-                            <SelectItem key={session.id} value={session.id.toString()}>
-                              {session.name} {session.phone && `(${session.phone})`}
+                          {connectedSessions.length === 0 ? (
+                            <SelectItem value="no-sessions" disabled>
+                              Nenhuma sessão conectada
                             </SelectItem>
-                          ))}
+                          ) : (
+                            connectedSessions.map((session: any) => (
+                              <SelectItem key={session.id} value={session.id.toString()}>
+                                {session.name} {session.phone && `(${session.phone})`}
+                              </SelectItem>
+                            ))
+                          )}
                         </SelectContent>
                       </Select>
                     </div>
