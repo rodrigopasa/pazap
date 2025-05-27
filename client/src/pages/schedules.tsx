@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, Clock, MessageCircle, Plus, Trash2, Smile, Bold, Italic, Type } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { 
+  Calendar, Clock, MessageCircle, Plus, Trash2, Smile, Bold, Italic, Type,
+  Image, Video, Music, FileText, MapPin, Link, Mic, Send, Upload,
+  Camera, Paperclip, Phone, Users, Hash
+} from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
@@ -46,6 +51,23 @@ export default function Schedules() {
   const [content, setContent] = useState("");
   const [scheduledDate, setScheduledDate] = useState("");
   const [scheduledTime, setScheduledTime] = useState("");
+  
+  // Advanced message features
+  const [messageType, setMessageType] = useState<"text" | "media" | "document" | "location" | "contact">("text");
+  const [mediaFiles, setMediaFiles] = useState<File[]>([]);
+  const [mediaCaption, setMediaCaption] = useState("");
+  const [documentFile, setDocumentFile] = useState<File | null>(null);
+  const [locationData, setLocationData] = useState({ lat: "", lng: "", name: "" });
+  const [contactData, setContactData] = useState({ name: "", phone: "" });
+  const [isRecording, setIsRecording] = useState(false);
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  
+  // File upload refs
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
+  const audioInputRef = useRef<HTMLInputElement>(null);
+  const documentInputRef = useRef<HTMLInputElement>(null);
+  
   const { toast } = useToast();
 
   // Buscar sessões ativas
@@ -132,6 +154,56 @@ export default function Schedules() {
     setContent("");
     setScheduledDate("");
     setScheduledTime("");
+    setMessageType("text");
+    setMediaFiles([]);
+    setMediaCaption("");
+    setDocumentFile(null);
+    setLocationData({ lat: "", lng: "", name: "" });
+    setContactData({ name: "", phone: "" });
+    setAudioBlob(null);
+  };
+
+  // Handle file uploads
+  const handleFileUpload = (files: FileList | null, type: "image" | "video" | "audio" | "document") => {
+    if (!files) return;
+    
+    if (type === "document") {
+      setDocumentFile(files[0]);
+      setMessageType("document");
+    } else {
+      const fileArray = Array.from(files);
+      setMediaFiles(prev => [...prev, ...fileArray]);
+      setMessageType("media");
+    }
+  };
+
+  // Format text with WhatsApp formatting
+  const insertTextFormat = (format: string) => {
+    const textarea = document.getElementById("content") as HTMLTextAreaElement;
+    if (!textarea) return;
+    
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = content.substring(start, end);
+    
+    let formattedText = "";
+    switch (format) {
+      case "bold":
+        formattedText = `*${selectedText}*`;
+        break;
+      case "italic":
+        formattedText = `_${selectedText}_`;
+        break;
+      case "strikethrough":
+        formattedText = `~${selectedText}~`;
+        break;
+      case "monospace":
+        formattedText = `\`\`\`${selectedText}\`\`\``;
+        break;
+    }
+    
+    const newContent = content.substring(0, start) + formattedText + content.substring(end);
+    setContent(newContent);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -255,35 +327,58 @@ export default function Schedules() {
                 )}
               </div>
 
-              {/* Tipo de Destinatário */}
-              <div className="space-y-3">
-                <Label>Tipo de Destinatário</Label>
-                <div className="flex gap-4">
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="radio"
-                      id="phone-option"
-                      value="phone"
-                      checked={recipientType === "phone"}
-                      onChange={(e) => setRecipientType(e.target.value as "phone" | "group")}
-                      className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                    />
-                    <Label htmlFor="phone-option" className="text-sm font-medium">
-                      📱 Número Individual
-                    </Label>
+              {/* Recipient Type Selection with enhanced design */}
+              <div className="bg-indigo-50 dark:bg-indigo-950 p-4 rounded-lg space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-900 rounded-lg flex items-center justify-center">
+                    <MessageCircle className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="radio"
-                      id="group-option"
-                      value="group"
-                      checked={recipientType === "group"}
-                      onChange={(e) => setRecipientType(e.target.value as "phone" | "group")}
-                      className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                    />
-                    <Label htmlFor="group-option" className="text-sm font-medium">
-                      👥 Grupo
-                    </Label>
+                  <Label className="text-base font-semibold">Tipo de Destinatário</Label>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                    recipientType === "phone" 
+                      ? "border-blue-500 bg-blue-50 dark:bg-blue-950 shadow-md" 
+                      : "border-gray-200 dark:border-gray-700 hover:border-gray-300"
+                  }`} onClick={() => setRecipientType("phone")}>
+                    <div className="flex items-center space-x-3">
+                      <input
+                        type="radio"
+                        id="phone-option"
+                        value="phone"
+                        checked={recipientType === "phone"}
+                        onChange={(e) => setRecipientType(e.target.value as "phone" | "group")}
+                        className="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500"
+                      />
+                      <div>
+                        <Label htmlFor="phone-option" className="text-base font-medium cursor-pointer">
+                          📱 Contato Individual
+                        </Label>
+                        <p className="text-sm text-gray-500">Enviar para um número específico</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                    recipientType === "group" 
+                      ? "border-green-500 bg-green-50 dark:bg-green-950 shadow-md" 
+                      : "border-gray-200 dark:border-gray-700 hover:border-gray-300"
+                  }`} onClick={() => setRecipientType("group")}>
+                    <div className="flex items-center space-x-3">
+                      <input
+                        type="radio"
+                        id="group-option"
+                        value="group"
+                        checked={recipientType === "group"}
+                        onChange={(e) => setRecipientType(e.target.value as "phone" | "group")}
+                        className="w-5 h-5 text-green-600 border-gray-300 focus:ring-green-500"
+                      />
+                      <div>
+                        <Label htmlFor="group-option" className="text-base font-medium cursor-pointer">
+                          👥 Grupo WhatsApp
+                        </Label>
+                        <p className="text-sm text-gray-500">Enviar para um grupo existente</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
