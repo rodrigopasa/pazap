@@ -45,10 +45,19 @@ function Router() {
   // Show loading while checking auth
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4" />
-          <p className="text-lg font-medium text-gray-700 dark:text-gray-300">Carregando PaZap...</p>
+      <div className="min-h-screen flex items-center justify-center pazap-gradient-soft relative overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-orange-300/20 rounded-full blur-3xl float"></div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-300/20 rounded-full blur-3xl float" style={{animationDelay: '1s'}}></div>
+        </div>
+        <div className="text-center relative z-10">
+          <div className="pazap-gradient p-4 rounded-2xl shadow-lg pulse-orange mb-6 inline-block">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white" />
+          </div>
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-blue-600 bg-clip-text text-transparent mb-2">
+            PaZap
+          </h1>
+          <p className="text-gray-600 font-medium">Carregando sistema...</p>
         </div>
       </div>
     );

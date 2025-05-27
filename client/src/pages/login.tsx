@@ -68,21 +68,30 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center space-y-4">
-          <div className="flex items-center justify-center space-x-2">
-            <div className="bg-green-600 p-2 rounded-lg">
-              <MessageSquare className="h-8 w-8 text-white" />
+    <div className="min-h-screen flex items-center justify-center pazap-gradient-soft relative overflow-hidden p-4">
+      {/* Background floating elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-orange-300/20 rounded-full blur-3xl float"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-300/20 rounded-full blur-3xl float" style={{animationDelay: '1s'}}></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-orange-200/10 rounded-full blur-3xl float" style={{animationDelay: '2s'}}></div>
+      </div>
+      
+      <Card className="w-full max-w-md glass-effect shadow-2xl border-0 relative z-10">
+        <CardHeader className="text-center space-y-6 pb-8">
+          <div className="flex items-center justify-center space-x-3">
+            <div className="pazap-gradient p-3 rounded-2xl shadow-lg pulse-orange">
+              <MessageSquare className="h-10 w-10 text-white" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">PaZap</h1>
           </div>
-          <CardTitle className="text-xl text-gray-700 dark:text-gray-300">
-            Sistema de Gestão WhatsApp
-          </CardTitle>
-          <div className="flex items-center justify-center space-x-1 text-sm text-gray-600 dark:text-gray-400">
-            <Shield className="h-4 w-4" />
-            <span>Área Restrita</span>
+          <div>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-500 to-blue-600 bg-clip-text text-transparent">
+              PaZap
+            </h1>
+            <p className="text-lg text-gray-600 mt-2 font-medium">Sistema de Gestão WhatsApp</p>
+          </div>
+          <div className="flex items-center justify-center space-x-2 bg-gradient-to-r from-orange-50 to-blue-50 px-4 py-2 rounded-full border border-orange-200/50">
+            <Shield className="h-4 w-4 text-orange-500" />
+            <span className="text-sm font-medium text-gray-700">Área Restrita</span>
           </div>
         </CardHeader>
         <CardContent>
@@ -124,19 +133,33 @@ export default function LoginPage() {
 
               <Button
                 type="submit"
-                className="w-full bg-green-600 hover:bg-green-700"
+                className="w-full pazap-gradient hover:shadow-lg transform hover:scale-105 transition-all duration-200 text-white font-semibold py-3 rounded-xl"
                 disabled={loginMutation.isPending}
               >
-                {loginMutation.isPending ? "Entrando..." : "Entrar"}
+                {loginMutation.isPending ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Entrando...</span>
+                  </div>
+                ) : (
+                  "Entrar no PaZap"
+                )}
               </Button>
             </form>
           </Form>
 
-          <div className="mt-6 text-center">
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              PaZap - Sistema de Gestão WhatsApp
+          <div className="mt-8 text-center space-y-3">
+            <div className="flex items-center justify-center space-x-2">
+              <div className="w-8 h-0.5 bg-gradient-to-r from-transparent to-orange-300"></div>
+              <p className="text-sm font-semibold bg-gradient-to-r from-orange-500 to-blue-600 bg-clip-text text-transparent">
+                PaZap
+              </p>
+              <div className="w-8 h-0.5 bg-gradient-to-l from-transparent to-blue-300"></div>
+            </div>
+            <p className="text-xs text-gray-500">
+              Sistema Avançado de Gestão WhatsApp
             </p>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+            <p className="text-xs text-gray-400">
               Para suporte técnico, entre em contato com o administrador
             </p>
           </div>
