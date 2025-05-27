@@ -422,38 +422,305 @@ export default function Schedules() {
                 </div>
               )}
 
-              <div className="space-y-2">
-                <Label htmlFor="content">Mensagem</Label>
-                <div className="space-y-2">
-                  <Textarea
-                    id="content"
-                    placeholder="Digite sua mensagem... (Você pode incluir links como https://exemplo.com)"
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                    rows={4}
-                  />
-                  <div className="flex justify-between items-center">
-                    <div className="text-xs text-gray-500">
-                      ✓ Links são automaticamente detectados • Use *negrito* e _itálico_
-                    </div>
-                    <span className="text-xs text-gray-400">
-                      {content.length}/2000
-                    </span>
+              {/* Advanced Message Composer */}
+              <div className="bg-green-50 dark:bg-green-950 p-4 rounded-lg space-y-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
+                    <MessageCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
                   </div>
-                  {/* Preview de Links */}
-                  {content && content.match(/(https?:\/\/[^\s]+)/g) && (
-                    <div className="bg-blue-50 p-2 rounded border-l-4 border-blue-200">
-                      <p className="text-xs font-medium text-blue-800">Links detectados:</p>
-                      <div className="space-y-1 mt-1">
-                        {content.match(/(https?:\/\/[^\s]+)/g)?.map((link, index) => (
-                          <div key={index} className="text-xs text-blue-600 break-all">
-                            📎 {link}
-                          </div>
-                        ))}
+                  <Label className="text-base font-semibold">Conteúdo da Mensagem</Label>
+                </div>
+
+                <Tabs value={messageType} onValueChange={(value) => setMessageType(value as any)} className="w-full">
+                  <TabsList className="grid grid-cols-5 w-full">
+                    <TabsTrigger value="text" className="flex items-center gap-1">
+                      <Type className="h-4 w-4" />
+                      Texto
+                    </TabsTrigger>
+                    <TabsTrigger value="media" className="flex items-center gap-1">
+                      <Image className="h-4 w-4" />
+                      Mídia
+                    </TabsTrigger>
+                    <TabsTrigger value="document" className="flex items-center gap-1">
+                      <FileText className="h-4 w-4" />
+                      Arquivo
+                    </TabsTrigger>
+                    <TabsTrigger value="location" className="flex items-center gap-1">
+                      <MapPin className="h-4 w-4" />
+                      Local
+                    </TabsTrigger>
+                    <TabsTrigger value="contact" className="flex items-center gap-1">
+                      <Users className="h-4 w-4" />
+                      Contato
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="text" className="space-y-3">
+                    {/* Text Formatting Toolbar */}
+                    <div className="flex items-center gap-2 p-2 bg-white dark:bg-gray-800 rounded border">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => insertTextFormat("bold")}
+                        className="h-8"
+                      >
+                        <Bold className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => insertTextFormat("italic")}
+                        className="h-8"
+                      >
+                        <Italic className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => insertTextFormat("strikethrough")}
+                        className="h-8"
+                      >
+                        <Type className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => insertTextFormat("monospace")}
+                        className="h-8"
+                      >
+                        <Hash className="h-4 w-4" />
+                      </Button>
+                      <div className="border-l border-gray-300 h-6 mx-2"></div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-8"
+                      >
+                        <Smile className="h-4 w-4" />
+                      </Button>
+                    </div>
+
+                    <Textarea
+                      id="content"
+                      placeholder="Digite sua mensagem... 
+✨ Use *negrito*, _itálico_, ~riscado~, ```código```
+🔗 Links são automaticamente detectados
+😀 Emojis são suportados"
+                      value={content}
+                      onChange={(e) => setContent(e.target.value)}
+                      rows={6}
+                      className="resize-none"
+                    />
+                    
+                    <div className="flex justify-between items-center">
+                      <div className="text-xs text-gray-500">
+                        ✓ Formatação WhatsApp • Links automáticos • Emojis suportados
+                      </div>
+                      <span className="text-xs text-gray-400">
+                        {content.length}/4096
+                      </span>
+                    </div>
+
+                    {/* Link Preview */}
+                    {content && content.match(/(https?:\/\/[^\s]+)/g) && (
+                      <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded border border-blue-200 dark:border-blue-800">
+                        <p className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2">🔗 Links detectados:</p>
+                        <div className="space-y-2">
+                          {content.match(/(https?:\/\/[^\s]+)/g)?.map((link, index) => (
+                            <div key={index} className="bg-white dark:bg-gray-800 p-2 rounded border">
+                              <p className="text-xs text-blue-600 dark:text-blue-400 break-all">{link}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </TabsContent>
+
+                  <TabsContent value="media" className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => imageInputRef.current?.click()}
+                        className="h-20 flex-col gap-2"
+                      >
+                        <Image className="h-6 w-6" />
+                        <span className="text-sm">Imagens</span>
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => videoInputRef.current?.click()}
+                        className="h-20 flex-col gap-2"
+                      >
+                        <Video className="h-6 w-6" />
+                        <span className="text-sm">Vídeos</span>
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => audioInputRef.current?.click()}
+                        className="h-20 flex-col gap-2"
+                      >
+                        <Music className="h-6 w-6" />
+                        <span className="text-sm">Áudio</span>
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="h-20 flex-col gap-2"
+                      >
+                        <Camera className="h-6 w-6" />
+                        <span className="text-sm">Câmera</span>
+                      </Button>
+                    </div>
+
+                    {mediaFiles.length > 0 && (
+                      <div className="space-y-2">
+                        <Label>Arquivos selecionados:</Label>
+                        <div className="space-y-2">
+                          {mediaFiles.map((file, index) => (
+                            <div key={index} className="flex items-center justify-between p-2 bg-white dark:bg-gray-800 rounded border">
+                              <span className="text-sm">{file.name}</span>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setMediaFiles(prev => prev.filter((_, i) => i !== index))}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                        <Textarea
+                          placeholder="Legenda opcional para as mídias..."
+                          value={mediaCaption}
+                          onChange={(e) => setMediaCaption(e.target.value)}
+                          rows={2}
+                        />
+                      </div>
+                    )}
+
+                    {/* Hidden file inputs */}
+                    <input
+                      ref={imageInputRef}
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={(e) => handleFileUpload(e.target.files, "image")}
+                      className="hidden"
+                    />
+                    <input
+                      ref={videoInputRef}
+                      type="file"
+                      accept="video/*"
+                      multiple
+                      onChange={(e) => handleFileUpload(e.target.files, "video")}
+                      className="hidden"
+                    />
+                    <input
+                      ref={audioInputRef}
+                      type="file"
+                      accept="audio/*"
+                      multiple
+                      onChange={(e) => handleFileUpload(e.target.files, "audio")}
+                      className="hidden"
+                    />
+                  </TabsContent>
+
+                  <TabsContent value="document" className="space-y-3">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => documentInputRef.current?.click()}
+                      className="w-full h-20 flex-col gap-2"
+                    >
+                      <Paperclip className="h-6 w-6" />
+                      <span>Selecionar Documento</span>
+                    </Button>
+
+                    {documentFile && (
+                      <div className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded border">
+                        <div className="flex items-center gap-2">
+                          <FileText className="h-5 w-5" />
+                          <span className="text-sm">{documentFile.name}</span>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setDocumentFile(null)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
+
+                    <input
+                      ref={documentInputRef}
+                      type="file"
+                      accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar"
+                      onChange={(e) => handleFileUpload(e.target.files, "document")}
+                      className="hidden"
+                    />
+                  </TabsContent>
+
+                  <TabsContent value="location" className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-2">
+                        <Label>Latitude</Label>
+                        <Input
+                          placeholder="-23.5505"
+                          value={locationData.lat}
+                          onChange={(e) => setLocationData(prev => ({ ...prev, lat: e.target.value }))}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Longitude</Label>
+                        <Input
+                          placeholder="-46.6333"
+                          value={locationData.lng}
+                          onChange={(e) => setLocationData(prev => ({ ...prev, lng: e.target.value }))}
+                        />
                       </div>
                     </div>
-                  )}
-                </div>
+                    <div className="space-y-2">
+                      <Label>Nome do Local (opcional)</Label>
+                      <Input
+                        placeholder="Ex: Av. Paulista, São Paulo"
+                        value={locationData.name}
+                        onChange={(e) => setLocationData(prev => ({ ...prev, name: e.target.value }))}
+                      />
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="contact" className="space-y-3">
+                    <div className="space-y-3">
+                      <div className="space-y-2">
+                        <Label>Nome do Contato</Label>
+                        <Input
+                          placeholder="João Silva"
+                          value={contactData.name}
+                          onChange={(e) => setContactData(prev => ({ ...prev, name: e.target.value }))}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Telefone</Label>
+                        <Input
+                          placeholder="5511999999999"
+                          value={contactData.phone}
+                          onChange={(e) => setContactData(prev => ({ ...prev, phone: e.target.value }))}
+                        />
+                      </div>
+                    </div>
+                  </TabsContent>
+                </Tabs>
               </div>
 
               <div className="grid grid-cols-2 gap-4">

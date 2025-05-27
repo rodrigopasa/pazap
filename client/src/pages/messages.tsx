@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,7 +27,16 @@ import {
   Smile,
   Bold,
   Italic,
-  Type
+  Type,
+  Video,
+  Music,
+  MapPin,
+  Users,
+  Hash,
+  Camera,
+  Paperclip,
+  Trash2,
+  MessageCircle
 } from "lucide-react";
 
 export default function Messages() {
@@ -40,10 +49,25 @@ export default function Messages() {
   const [phones, setPhones] = useState("");
   const [content, setContent] = useState("");
   const [sessionId, setSessionId] = useState("");
-  const [messageType, setMessageType] = useState("text");
+  const [messageType, setMessageType] = useState<"text" | "media" | "document" | "location" | "contact">("text");
   const [scheduledAt, setScheduledAt] = useState("");
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  
+  // Advanced WhatsApp features
+  const [mediaFiles, setMediaFiles] = useState<File[]>([]);
+  const [mediaCaption, setMediaCaption] = useState("");
+  const [documentFile, setDocumentFile] = useState<File | null>(null);
+  const [locationData, setLocationData] = useState({ lat: "", lng: "", name: "" });
+  const [contactData, setContactData] = useState({ name: "", phone: "" });
+  const [recipientType, setRecipientType] = useState<"phone" | "group">("phone");
+  const [selectedGroup, setSelectedGroup] = useState<string>("");
+  
+  // File upload refs
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
+  const audioInputRef = useRef<HTMLInputElement>(null);
+  const documentInputRef = useRef<HTMLInputElement>(null);
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -111,6 +135,56 @@ export default function Messages() {
     setScheduledAt("");
     setMediaFile(null);
     setShowEmojiPicker(false);
+    setMediaFiles([]);
+    setMediaCaption("");
+    setDocumentFile(null);
+    setLocationData({ lat: "", lng: "", name: "" });
+    setContactData({ name: "", phone: "" });
+    setRecipientType("phone");
+    setSelectedGroup("");
+  };
+
+  // Handle file uploads for advanced features
+  const handleFileUpload = (files: FileList | null, type: "image" | "video" | "audio" | "document") => {
+    if (!files) return;
+    
+    if (type === "document") {
+      setDocumentFile(files[0]);
+      setMessageType("document");
+    } else {
+      const fileArray = Array.from(files);
+      setMediaFiles(prev => [...prev, ...fileArray]);
+      setMessageType("media");
+    }
+  };
+
+  // Format text with WhatsApp formatting
+  const insertTextFormat = (format: string) => {
+    const textarea = document.getElementById("content") as HTMLTextAreaElement;
+    if (!textarea) return;
+    
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = content.substring(start, end);
+    
+    let formattedText = "";
+    switch (format) {
+      case "bold":
+        formattedText = `*${selectedText}*`;
+        break;
+      case "italic":
+        formattedText = `_${selectedText}_`;
+        break;
+      case "strikethrough":
+        formattedText = `~${selectedText}~`;
+        break;
+      case "monospace":
+        formattedText = `\`\`\`${selectedText}\`\`\``;
+        break;
+    }
+    
+    const newContent = content.substring(0, start) + formattedText + content.substring(end);
+    setContent(newContent);
   };
 
   // Função para adicionar emoji ao texto
@@ -305,14 +379,21 @@ export default function Messages() {
                   Nova Mensagem
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                  <DialogTitle>Enviar Mensagem</DialogTitle>
-                  <DialogDescription>
-                    Envie mensagens para um ou múltiplos destinatários
-                  </DialogDescription>
+              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader className="space-y-3 pb-4 border-b border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
+                      <Send className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <DialogTitle className="text-2xl font-bold">💬 Disparador WhatsApp</DialogTitle>
+                      <DialogDescription className="text-gray-600 dark:text-gray-400">
+                        Envie mensagens avançadas com mídia, documentos, localização e muito mais
+                      </DialogDescription>
+                    </div>
+                  </div>
                 </DialogHeader>
-                <form onSubmit={handleSendMessage} className="space-y-4">
+                <form onSubmit={handleSendMessage} className="space-y-6 pt-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="session">Sessão *</Label>
