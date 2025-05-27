@@ -14,7 +14,8 @@ import {
   Settings,
   LogOut,
   Bell,
-  Shield
+  Shield,
+  Bot
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -28,6 +29,7 @@ const navigation = [
   { name: "Dashboard", href: "/", icon: BarChart3 },
   { name: "Sessões", href: "/sessions", icon: Smartphone },
   { name: "Mensagens", href: "/messages", icon: MessageSquare },
+  { name: "Respostas Automáticas", href: "/auto-replies", icon: Bot },
   { name: "Agendamentos", href: "/schedules", icon: Clock },
   { name: "Controle de Envio", href: "/rate-limit", icon: Shield },
   { name: "Notificações", href: "/notifications", icon: Bell },
@@ -65,19 +67,19 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
       
       {/* Sidebar */}
       <div className={cn(
-        "fixed inset-y-0 left-0 z-30 w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out lg:translate-x-0",
+        "fixed inset-y-0 left-0 z-30 w-64 bg-sidebar-background border-r border-sidebar-border transform transition-transform duration-300 ease-in-out lg:translate-x-0",
         open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
       )}>
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="flex items-center h-16 px-4 border-b border-gray-200">
+          <div className="flex items-center h-16 px-4 border-b border-sidebar-border">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
-                <MessageSquare className="h-5 w-5 text-white" />
+              <div className="w-10 h-10 pazap-gradient rounded-xl flex items-center justify-center shadow-lg pulse-orange">
+                <MessageSquare className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-lg font-semibold text-gray-900">WhatsApp Manager</h1>
-                <p className="text-xs text-gray-500">Sistema Avançado</p>
+                <h1 className="text-xl font-bold text-sidebar-foreground">PaZap</h1>
+                <p className="text-xs text-sidebar-foreground/70">Sistema Avançado</p>
               </div>
             </div>
           </div>

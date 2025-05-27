@@ -3,39 +3,39 @@
 @tailwind utilities;
 
 :root {
-  --background: 0 0% 100%;
-  --foreground: 20 14.3% 4.1%;
-  --muted: 60 4.8% 95.9%;
-  --muted-foreground: 25 5.3% 44.7%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 20 14.3% 4.1%;
+  --background: 210 20% 98%; /* #F7F9FC */
+  --foreground: 222 84% 4.9%; /* #0F172A */
+  --muted: 210 40% 95%; /* #F1F5F9 */
+  --muted-foreground: 215.4 16.3% 46.9%; /* #64748B */
+  --popover: 210 20% 98%;
+  --popover-foreground: 222 84% 4.9%;
   --card: 0 0% 100%;
-  --card-foreground: 20 14.3% 4.1%;
-  --border: 20 5.9% 90%;
-  --input: 20 5.9% 90%;
-  --primary: 142 76% 36%; /* WhatsApp green #25D366 */
+  --card-foreground: 222 84% 4.9%;
+  --border: 214.3 31.8% 91.4%; /* #E2E8F0 */
+  --input: 214.3 31.8% 91.4%;
+  --primary: 24 100% 50%; /* PaZap Orange #FF6600 */
   --primary-foreground: 0 0% 98%;
-  --secondary: 60 4.8% 95.9%;
-  --secondary-foreground: 24 9.8% 10%;
-  --accent: 142 31% 45%; /* WhatsApp teal */
+  --secondary: 210 40% 95%;
+  --secondary-foreground: 222.2 84% 4.9%;
+  --accent: 217.2 91.2% 59.8%; /* PaZap Blue #3B82F6 */
   --accent-foreground: 0 0% 98%;
   --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 60 9.1% 97.8%;
-  --ring: 142 76% 36%;
-  --radius: 0.5rem;
-  --chart-1: 142 76% 36%;
-  --chart-2: 160 60% 45%;
-  --chart-3: 30 80% 55%;
-  --chart-4: 280 65% 60%;
-  --chart-5: 340 75% 55%;
-  --sidebar-background: 0 0% 98%;
-  --sidebar-foreground: 240 5.3% 26.1%;
-  --sidebar-primary: 142 76% 36%;
+  --destructive-foreground: 210 40% 98%;
+  --ring: 24 100% 50%;
+  --radius: 0.75rem;
+  --chart-1: 24 100% 50%; /* Orange */
+  --chart-2: 217.2 91.2% 59.8%; /* Blue */
+  --chart-3: 142 76% 36%; /* Green */
+  --chart-4: 262.1 83.3% 57.8%; /* Purple */
+  --chart-5: 346.8 77.2% 49.8%; /* Pink */
+  --sidebar-background: 222 84% 4.9%; /* Dark blue */
+  --sidebar-foreground: 210 40% 98%;
+  --sidebar-primary: 24 100% 50%;
   --sidebar-primary-foreground: 0 0% 98%;
-  --sidebar-accent: 240 4.8% 95.9%;
-  --sidebar-accent-foreground: 240 5.9% 10%;
-  --sidebar-border: 220 13% 91%;
-  --sidebar-ring: 217.2 91.2% 59.8%;
+  --sidebar-accent: 217.2 32.6% 17.5%; /* Darker blue */
+  --sidebar-accent-foreground: 210 40% 98%;
+  --sidebar-border: 217.2 32.6% 17.5%;
+  --sidebar-ring: 24 100% 50%;
 }
 
 .dark {
@@ -78,36 +78,57 @@
     font-family: 'Inter', sans-serif;
   }
 
-  /* WhatsApp specific colors */
-  .whatsapp-green {
-    @apply bg-green-600 text-white;
+  /* PaZap brand colors */
+  .pazap-orange {
+    @apply bg-orange-500 text-white;
   }
   
-  .whatsapp-green-hover {
-    @apply hover:bg-green-700;
+  .pazap-orange-hover {
+    @apply hover:bg-orange-600;
   }
   
-  .whatsapp-light {
-    @apply bg-green-50 border-green-200 text-green-800;
+  .pazap-blue {
+    @apply bg-blue-500 text-white;
+  }
+  
+  .pazap-blue-hover {
+    @apply hover:bg-blue-600;
+  }
+  
+  .pazap-gradient {
+    background: linear-gradient(135deg, #FF6600 0%, #3B82F6 100%);
+  }
+  
+  .pazap-gradient-soft {
+    background: linear-gradient(135deg, #FFF7ED 0%, #DBEAFE 100%);
   }
 
   /* Animation for real-time updates */
-  .pulse-green {
-    animation: pulse-green 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  .pulse-orange {
+    animation: pulse-orange 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
 
-  @keyframes pulse-green {
+  @keyframes pulse-orange {
     0%, 100% {
       opacity: 1;
+      box-shadow: 0 0 0 0 rgba(255, 102, 0, 0.7);
     }
     50% {
-      opacity: .5;
+      opacity: .8;
+      box-shadow: 0 0 0 10px rgba(255, 102, 0, 0);
     }
+  }
+
+  /* Glass morphism effect */
+  .glass-effect {
+    backdrop-filter: blur(16px) saturate(180%);
+    background-color: rgba(255, 255, 255, 0.75);
+    border: 1px solid rgba(209, 213, 219, 0.3);
   }
 
   /* Status indicators */
   .status-connected {
-    @apply bg-green-400;
+    @apply bg-emerald-400;
   }
   
   .status-disconnected {
@@ -115,10 +136,24 @@
   }
   
   .status-connecting {
-    @apply bg-yellow-400;
+    @apply bg-amber-400;
   }
   
   .status-qr-needed {
     @apply bg-blue-400;
+  }
+
+  /* Floating animation */
+  .float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
   }
 }

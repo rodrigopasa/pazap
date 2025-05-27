@@ -8,6 +8,7 @@ import Layout from "@/components/Layout";
 import Dashboard from "@/pages/dashboard";
 import Sessions from "@/pages/sessions";
 import Messages from "@/pages/messages-new";
+import AutoReplies from "@/pages/AutoReplies";
 import Campaigns from "@/pages/campaigns";
 import Groups from "@/pages/groups";
 import Reports from "@/pages/reports";
@@ -61,6 +62,7 @@ function Router() {
         <Route path="/dashboard" component={Dashboard} />
         <Route path="/sessions" component={Sessions} />
         <Route path="/messages" component={Messages} />
+        <Route path="/auto-replies" component={AutoReplies} />
         <Route path="/campaigns" component={Campaigns} />
         <Route path="/groups" component={Groups} />
         <Route path="/schedules" component={Schedules} />
