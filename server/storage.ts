@@ -1,11 +1,11 @@
 import { 
   users, sessions, messages, campaigns, birthdays, groups, groupMembers, 
-  contacts, notifications, logs, settings,
+  contacts, notifications, logs, settings, autoReplies,
   type User, type InsertUser, type Session, type InsertSession,
   type Message, type InsertMessage, type Campaign, type InsertCampaign,
   type Birthday, type InsertBirthday, type Group, type InsertGroup,
   type Contact, type InsertContact, type Notification, type InsertNotification,
-  type Log, type Setting, type InsertSetting
+  type Log, type Setting, type InsertSetting, type AutoReply, type InsertAutoReply
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lte, count, sql, inArray } from "drizzle-orm";
@@ -643,6 +643,54 @@ export class DatabaseStorage implements IStorage {
 
   async getSettings(userId: number): Promise<Setting[]> {
     return await db.select().from(settings).where(eq(settings.userId, userId));
+  }
+
+  // Auto Replies methods
+  async getAutoReplies(userId: number, sessionId?: number): Promise<AutoReply[]> {
+    let query = db.select().from(autoReplies).where(eq(autoReplies.userId, userId));
+    
+    if (sessionId) {
+      query = query.where(eq(autoReplies.sessionId, sessionId));
+    }
+    
+    return await query.orderBy(desc(autoReplies.priority), desc(autoReplies.createdAt));
+  }
+
+  async getAutoReply(id: number): Promise<AutoReply | undefined> {
+    const result = await db.select().from(autoReplies).where(eq(autoReplies.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createAutoReply(autoReply: InsertAutoReply): Promise<AutoReply> {
+    const result = await db.insert(autoReplies).values(autoReply).returning();
+    return result[0];
+  }
+
+  async updateAutoReply(id: number, updates: Partial<AutoReply>): Promise<AutoReply> {
+    const result = await db.update(autoReplies)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(autoReplies.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteAutoReply(id: number): Promise<void> {
+    await db.delete(autoReplies).where(eq(autoReplies.id, id));
+  }
+
+  async getActiveAutoReplies(userId: number, sessionId?: number): Promise<AutoReply[]> {
+    let query = db.select().from(autoReplies).where(
+      and(
+        eq(autoReplies.userId, userId),
+        eq(autoReplies.isActive, true)
+      )
+    );
+    
+    if (sessionId) {
+      query = query.where(eq(autoReplies.sessionId, sessionId));
+    }
+    
+    return await query.orderBy(desc(autoReplies.priority), desc(autoReplies.createdAt));
   }
 }
 
