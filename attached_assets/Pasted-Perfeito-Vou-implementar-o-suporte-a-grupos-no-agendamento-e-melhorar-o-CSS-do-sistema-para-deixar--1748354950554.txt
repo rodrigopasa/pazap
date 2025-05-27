@@ -1,0 +1,50 @@
+Perfeito! Vou implementar o suporte a grupos no agendamento e melhorar o CSS do sistema para deixar tudo proporcional e com melhor design.
+
+
+Edited client/src/pages/schedules.tsx
+Agora vou adicionar o suporte a grupos no agendamento e buscar os grupos disponíveis:
+
+
+Edited client/src/pages/schedules.tsx
+Agora vou atualizar o formulário de agendamento para incluir suporte a grupos e melhorar o CSS. Vou adicionar um seletor de tipo de destinatário:
+
+
+Edited client/src/pages/schedules.tsx
+Vou continuar implementando o suporte a grupos no agendamento e melhorar o CSS. Agora vou atualizar a validação e o formulário:
+
+Vou implementar o suporte a grupos no agendamento e melhorar o CSS! Deixe-me atualizar o formulário para incluir a seleção de tipo de destinatário:
+
+
+Opened client/src/pages/schedules.tsx
+Vou implementar o suporte a grupos no agendamento e melhorar o CSS! Deixe-me atualizar o formulário:
+
+
+Edited client/src/pages/schedules.tsx
+Vou atualizar o formulário para incluir o seletor de tipo de destinatário e melhorar o CSS para ficar mais proporcional:
+
+
+Edited client/src/pages/schedules.tsx
+Agora vou atualizar o formulário para incluir a seleção de tipo de destinatário (telefone ou grupo) e melhorar o CSS para ficar mais proporcional:
+
+
+Opened client/src/pages/schedules.tsx
+Vou implementar o suporte a grupos no agendamento e melhorar o CSS! Deixe-me atualizar o formulário para incluir a seleção de tipo de destinatário:
+
+
+Edited client/src/pages/schedules.tsx
+Agora vou melhorar o CSS para tornar o sistema mais proporcional e visualmente atrativo. Vou atualizar os estilos dos botões e layout:
+
+
+Edited client/src/pages/schedules.tsx
+
+Took a screenshot
+Checkpoint made
+3 minutes ago
+•
+Enable scheduling messages to groups and improve overall page layout
+Screenshot
+Load preview
+Agora vou atualizar a API do servidor para suportar grupos nos agendamentos e melhorar o header da página para ter um layout mais proporcional:
+
+
+Edited server/routes.ts

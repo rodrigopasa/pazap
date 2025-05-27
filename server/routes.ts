@@ -264,9 +264,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/messages/schedule", async (req, res) => {
     try {
-      const { sessionId, phone, content, scheduledDate, scheduledTime } = req.body;
+      const { sessionId, recipientType, phone, groupId, content, scheduledDate, scheduledTime } = req.body;
       
-      if (!sessionId || !phone || !content || !scheduledDate || !scheduledTime) {
+      const recipient = recipientType === "phone" ? phone : groupId;
+      
+      if (!sessionId || !recipient || !content || !scheduledDate || !scheduledTime) {
         return res.status(400).json({ error: "Todos os campos são obrigatórios" });
       }
 
@@ -280,7 +282,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         sessionId: parseInt(sessionId),
         type: 'text',
         content,
-        phone,
+        phone: recipientType === "phone" ? phone : `group:${groupId}`,
         status: 'scheduled',
         scheduledAt
       });
