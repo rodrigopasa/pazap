@@ -233,6 +233,55 @@ class WhatsAppService {
     }
   }
 
+  async getGroupsFromWhatsApp(sessionId: string): Promise<any[]> {
+    const session = this.sessions.get(sessionId);
+    
+    if (!session || !session.isConnected) {
+      throw new Error('Session not connected');
+    }
+
+    try {
+      // Buscar todos os chats do tipo grupo
+      const chats = await session.socket.getChats();
+      const groups = chats.filter(chat => chat.id.endsWith('@g.us'));
+      
+      const groupsData = [];
+      
+      for (const group of groups) {
+        try {
+          // Buscar metadados do grupo
+          const groupMetadata = await session.socket.groupMetadata(group.id);
+          
+          groupsData.push({
+            whatsappId: group.id,
+            name: groupMetadata.subject || group.name || 'Sem nome',
+            description: groupMetadata.desc || '',
+            memberCount: groupMetadata.participants?.length || 0,
+            isAdmin: groupMetadata.participants?.find(p => 
+              p.id.includes(session.socket.user?.id?.split(':')[0]) && 
+              (p.admin === 'admin' || p.admin === 'superadmin')
+            ) ? true : false
+          });
+        } catch (error) {
+          // Se não conseguir buscar metadados, adiciona informações básicas
+          groupsData.push({
+            whatsappId: group.id,
+            name: group.name || 'Sem nome',
+            description: '',
+            memberCount: 0,
+            isAdmin: false
+          });
+        }
+      }
+      
+      await this.createLog(sessionId, 'info', `Found ${groupsData.length} groups`);
+      return groupsData;
+    } catch (error) {
+      await this.createLog(sessionId, 'error', `Failed to get groups: ${error.message}`);
+      throw error;
+    }
+  }
+
   private formatPhoneNumber(phone: string): string {
     // Remove any non-digit characters
     const cleaned = phone.replace(/\D/g, '');

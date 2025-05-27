@@ -273,8 +273,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const scheduledAt = new Date(`${scheduledDate}T${scheduledTime}`);
+      const now = new Date();
       
-      if (scheduledAt <= new Date()) {
+      if (isNaN(scheduledAt.getTime())) {
+        return res.status(400).json({ error: "Data e hora inválidas" });
+      }
+      
+      if (scheduledAt <= now) {
         return res.status(400).json({ error: "A data e hora devem ser no futuro" });
       }
 
@@ -711,6 +716,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(groups);
     } catch (error) {
       res.status(500).json({ error: "Failed to get groups" });
+    }
+  });
+
+  app.post("/api/groups/sync", async (req, res) => {
+    try {
+      const { sessionId } = req.body;
+      const session = await storage.getSession(sessionId);
+      
+      if (!session) {
+        return res.status(404).json({ error: "Session not found" });
+      }
+
+      // Buscar grupos do WhatsApp
+      const { whatsappService } = await import('./services/whatsapp');
+      const whatsappGroups = await whatsappService.getGroupsFromWhatsApp(session.sessionId);
+      
+      // Sincronizar com o banco de dados
+      const syncedGroups = [];
+      for (const groupData of whatsappGroups) {
+        try {
+          const groupPayload = {
+            sessionId,
+            groupId: groupData.whatsappId,
+            name: groupData.name,
+            description: groupData.description || '',
+            memberCount: groupData.memberCount || 0,
+            isActive: true
+          };
+          
+          const group = await storage.createGroup(groupPayload);
+          syncedGroups.push(group);
+        } catch (error) {
+          console.log('Group already exists or error:', groupData.name);
+        }
+      }
+
+      res.json({ 
+        synced: syncedGroups.length, 
+        total: whatsappGroups.length,
+        groups: syncedGroups,
+        message: `${syncedGroups.length} grupos sincronizados com sucesso!`
+      });
+    } catch (error: any) {
+      console.error("Error syncing groups:", error);
+      res.status(500).json({ error: error.message });
     }
   });
 
