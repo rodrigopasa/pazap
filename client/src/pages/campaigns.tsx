@@ -25,7 +25,12 @@ import {
   Upload,
   Target,
   CheckCircle,
-  XCircle
+  XCircle,
+  Bold,
+  Italic,
+  Strikethrough,
+  Code,
+  Smile
 } from "lucide-react";
 
 export default function Campaigns() {
@@ -359,12 +364,100 @@ export default function Campaigns() {
                   
                   <div>
                     <Label htmlFor="messageTemplate">Template da Mensagem *</Label>
+                    
+                    {/* Toolbar de formatação profissional */}
+                    <div className="border border-gray-300 rounded-t-md p-2 bg-gray-50 flex items-center gap-2 flex-wrap">
+                      <div className="flex items-center gap-1">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => addFormatting('bold')}
+                          className="h-8 w-8 p-0"
+                          title="Negrito (*texto*)"
+                        >
+                          <Bold className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => addFormatting('italic')}
+                          className="h-8 w-8 p-0"
+                          title="Itálico (_texto_)"
+                        >
+                          <Italic className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => addFormatting('strikethrough')}
+                          className="h-8 w-8 p-0"
+                          title="Riscado (~texto~)"
+                        >
+                          <Strikethrough className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => addFormatting('monospace')}
+                          className="h-8 w-8 p-0"
+                          title="Monoespaçado (```texto```)"
+                        >
+                          <Code className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      
+                      <div className="w-px h-6 bg-gray-300"></div>
+                      
+                      <div className="relative">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                          className="h-8 px-2"
+                          title="Adicionar emoji"
+                        >
+                          <Smile className="h-4 w-4 mr-1" />
+                          😊
+                        </Button>
+                        
+                        {showEmojiPicker && (
+                          <div className="absolute top-10 left-0 z-50 bg-white border border-gray-300 rounded-lg shadow-lg p-3 w-64">
+                            <div className="text-xs text-gray-500 mb-2 font-medium">Emojis populares</div>
+                            <div className="grid grid-cols-8 gap-1">
+                              {popularEmojis.map((emoji, index) => (
+                                <button
+                                  key={index}
+                                  type="button"
+                                  onClick={() => addEmoji(emoji)}
+                                  className="w-8 h-8 text-lg hover:bg-gray-100 rounded flex items-center justify-center"
+                                >
+                                  {emoji}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="w-px h-6 bg-gray-300"></div>
+                      
+                      <div className="text-xs text-gray-500">
+                        *negrito* _itálico_ ~riscado~ ```código```
+                      </div>
+                    </div>
+                    
                     <Textarea
                       id="messageTemplate"
                       placeholder="Digite o template da mensagem..."
                       value={messageTemplate}
                       onChange={(e) => setMessageTemplate(e.target.value)}
                       rows={4}
+                      className="rounded-t-none border-t-0 focus:ring-0"
                     />
                   </div>
                   
