@@ -1,0 +1,164 @@
+✅ 1. Visão Geral do Sistema
+Nome: Gerenciador Avançado de WhatsApp
+Tecnologia de envio: Baileys
+Banco de dados: PostgreSQL
+Backend: Node.js (Express)
+Frontend: React ou Next.js (opcional)
+Execução: Modo produção, pronto para rodar 24/7
+Deploy: PM2 para manter o processo online
+Objetivo: Plataforma robusta de disparo, agendamento, campanhas e gerenciamento de WhatsApp.
+
+🧱 2. Estrutura Geral do Projeto
+bash
+Copiar
+Editar
+/whatsapp-manager/
+├── backend/
+│   ├── controllers/
+│   ├── services/
+│   ├── jobs/
+│   ├── routes/
+│   ├── utils/
+│   ├── baileys/
+│   ├── models/
+│   └── index.js
+├── frontend/ (opcional)
+│   └── painéis de gestão
+├── database/
+│   └── migrations/
+├── scripts/
+│   └── leitura de CSV, importação, etc
+├── .env
+└── README.md
+🛠️ 3. Funcionalidades Detalhadas
+🔐 Sessões com Baileys
+Gerenciamento de múltiplas sessões de WhatsApp.
+
+Sessões salvas no PostgreSQL.
+
+QR Code para login.
+
+Reconexão automática.
+
+Suporte a múltiplos usuários e instâncias.
+
+📤 Envio de Mensagens (em massa ou individual)
+Via CSV ou input manual (números separados por vírgula).
+
+Suporte a:
+
+Texto + Emojis
+
+Imagens
+
+Documentos (.pdf, .doc, etc)
+
+Log de envio (status: sucesso, falha, bloqueado).
+
+🕒 Agendamento de Mensagens
+Agendamento para grupos, contatos ou listas.
+
+Armazenamento das mensagens agendadas no PostgreSQL.
+
+Verificação automática via cron job.
+
+🎯 Criação de Grupos e Adição em Massa
+Criação de grupos via API Baileys.
+
+Adição automática de membros a grupos (respeitando limites do WhatsApp).
+
+Controle de erros (número não existe, já está no grupo, etc).
+
+🎉 Campanhas de Aniversário
+Upload de CSV com:
+
+Número
+
+Data de nascimento
+
+Nome (opcional para personalizar)
+
+Cron job que executa diariamente e envia parabéns para aniversariantes do dia.
+
+Mensagem personalizada com template.
+
+📑 Histórico e Relatórios
+Dashboard com:
+
+Mensagens enviadas
+
+Mensagens agendadas
+
+Taxa de sucesso
+
+Falhas por sessão
+
+Filtros por data, campanha, tipo (imagem, texto).
+
+🧠 Tratamento Anti-bloqueio
+Delay randômico entre mensagens.
+
+Revezamento de sessões (multi-conta).
+
+Restrições personalizadas de disparo por sessão (ex: 20 mensagens/hora).
+
+Logs de falhas por número.
+
+📲 Sessão de Notificações
+Cadastro de um número "admin"
+
+Notificações automáticas para:
+
+Sucesso de envio
+
+Falha
+
+Sessão desconectada
+
+Fim de campanha
+
+🧩 Banco de Dados (PostgreSQL)
+Tabelas principais:
+sql
+Copiar
+Editar
+users (id, name, email, password_hash)
+sessions (id, user_id, session_id, data)
+messages (id, type, content, media_url, status, scheduled_at, sent_at, session_id, phone)
+campaigns (id, name, type, status)
+birthdays (id, phone, name, birth_date, campaign_id)
+notifications (id, number, type, message, created_at)
+groups (id, name, session_id, group_id)
+group_members (id, group_id, phone)
+🔧 Stack Tecnológico
+Node.js (servidor)
+
+Express.js (API REST)
+
+Baileys (cliente WhatsApp)
+
+PostgreSQL (banco de dados)
+
+Sequelize ou Prisma (ORM)
+
+CSV Parser (csv-parser)
+
+Node-cron (agendamentos)
+
+PM2 (process manager)
+
+Socket.io (se desejar feedback em tempo real no painel)
+
+🧪 Segurança & Escalabilidade
+Criptografia para sessões (evitar roubo de token)
+
+Middleware de autenticação
+
+API Rate Limiting
+
+Logs estruturados
+
+Ambiente .env configurável
+
+Possibilidade de escalar com Docker + NGINX
+
