@@ -51,30 +51,11 @@ export default function Dashboard() {
   const activeSessions = sessions?.filter((s: any) => s.status === 'connected') || [];
   const allSessions = sessions || [];
 
-  // Get scheduled messages (mock for now - would need separate endpoint)
-  const scheduledMessages = [
-    {
-      id: 1,
-      title: "Lembrete de Consulta",
-      schedule: "Hoje às 14:30",
-      recipients: 247,
-      status: "scheduled"
-    },
-    {
-      id: 2,
-      title: "Aniversários do Mês", 
-      schedule: "Amanhã às 09:00",
-      recipients: 89,
-      status: "recurring"
-    },
-    {
-      id: 3,
-      title: "Campanha Natal 2024",
-      schedule: "15 Dez às 08:00", 
-      recipients: 1856,
-      status: "campaign"
-    }
-  ];
+  // Get real scheduled messages
+  const { data: scheduledMessages } = useQuery({
+    queryKey: ["/api/messages/scheduled"],
+    refetchInterval: 15000,
+  });
 
   const getStatusColor = (status: string) => {
     switch (status) {
