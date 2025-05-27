@@ -89,19 +89,17 @@ export function Sidebar() {
           {navigation.map((item) => {
             const isActive = location === item.href;
             return (
-              <Link key={item.name} href={item.href}>
-                <a className={cn(
-                  "group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors",
-                  isActive
-                    ? "bg-whatsapp-100 text-whatsapp-700"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                )}>
-                  <item.icon className={cn(
-                    "mr-3 flex-shrink-0 h-4 w-4",
-                    isActive ? "text-whatsapp-500" : "text-gray-400"
-                  )} />
-                  {item.name}
-                </a>
+              <Link key={item.name} href={item.href} className={cn(
+                "group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors",
+                isActive
+                  ? "bg-whatsapp-100 text-whatsapp-700"
+                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+              )}>
+                <item.icon className={cn(
+                  "mr-3 flex-shrink-0 h-4 w-4",
+                  isActive ? "text-whatsapp-500" : "text-gray-400"
+                )} />
+                {item.name}
               </Link>
             );
           })}
