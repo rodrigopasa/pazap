@@ -1,11 +1,11 @@
 import { 
   users, sessions, messages, campaigns, birthdays, groups, groupMembers, 
-  contacts, notifications, logs,
+  contacts, notifications, logs, settings,
   type User, type InsertUser, type Session, type InsertSession,
   type Message, type InsertMessage, type Campaign, type InsertCampaign,
   type Birthday, type InsertBirthday, type Group, type InsertGroup,
   type Contact, type InsertContact, type Notification, type InsertNotification,
-  type Log
+  type Log, type Setting, type InsertSetting
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lte, count, sql, inArray } from "drizzle-orm";
