@@ -12,7 +12,8 @@ import {
   Activity,
   Smartphone,
   Settings,
-  LogOut
+  LogOut,
+  Bell
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -27,8 +28,10 @@ const navigation = [
   { name: "Sessões", href: "/sessions", icon: Smartphone },
   { name: "Mensagens", href: "/messages", icon: MessageSquare },
   { name: "Agendamentos", href: "/schedules", icon: Clock },
+  { name: "Notificações", href: "/notifications", icon: Bell },
   { name: "Campanhas", href: "/campaigns", icon: Megaphone },
   { name: "Grupos", href: "/groups", icon: Users },
+  { name: "Aniversários", href: "/birthdays", icon: Cake },
   { name: "Relatórios", href: "/reports", icon: BarChart3 },
 ];
 
