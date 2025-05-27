@@ -34,7 +34,9 @@ interface Session {
 export default function Schedules() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedSession, setSelectedSession] = useState<string>("");
+  const [recipientType, setRecipientType] = useState<"phone" | "group">("phone");
   const [phone, setPhone] = useState("");
+  const [selectedGroup, setSelectedGroup] = useState<string>("");
   const [content, setContent] = useState("");
   const [scheduledDate, setScheduledDate] = useState("");
   const [scheduledTime, setScheduledTime] = useState("");
@@ -48,6 +50,12 @@ export default function Schedules() {
   // Buscar mensagens agendadas
   const { data: scheduledMessages = [], isLoading } = useQuery<ScheduledMessage[]>({
     queryKey: ["/api/messages/scheduled"],
+  })
+
+  // Buscar grupos da sessão selecionada
+  const { data: groups = [] } = useQuery({
+    queryKey: ["/api/groups", selectedSession],
+    enabled: !!selectedSession && recipientType === "group",
   });
 
   // Mutation para criar mensagem agendada
@@ -112,7 +120,9 @@ export default function Schedules() {
 
   const resetForm = () => {
     setSelectedSession("");
+    setRecipientType("phone");
     setPhone("");
+    setSelectedGroup("");
     setContent("");
     setScheduledDate("");
     setScheduledTime("");
@@ -121,7 +131,9 @@ export default function Schedules() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!selectedSession || !phone || !content || !scheduledDate || !scheduledTime) {
+    const recipient = recipientType === "phone" ? phone : selectedGroup;
+    
+    if (!selectedSession || !recipient || !content || !scheduledDate || !scheduledTime) {
       toast({
         title: "Erro",
         description: "Todos os campos são obrigatórios",
@@ -143,10 +155,12 @@ export default function Schedules() {
 
     createScheduledMessage.mutate({
       sessionId: parseInt(selectedSession),
-      phone: phone,
-      content: content,
-      scheduledAt: scheduledAt.toISOString(),
-      type: "text",
+      recipientType,
+      phone: recipientType === "phone" ? phone : undefined,
+      groupId: recipientType === "group" ? selectedGroup : undefined,
+      content,
+      scheduledDate,
+      scheduledTime
     });
   };
 
@@ -206,16 +220,77 @@ export default function Schedules() {
                 </Select>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="phone">Número do WhatsApp</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="Ex: 5511999999999"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                />
+              {/* Tipo de Destinatário */}
+              <div className="space-y-3">
+                <Label>Tipo de Destinatário</Label>
+                <div className="flex gap-4">
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      id="phone-option"
+                      value="phone"
+                      checked={recipientType === "phone"}
+                      onChange={(e) => setRecipientType(e.target.value as "phone" | "group")}
+                      className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                    />
+                    <Label htmlFor="phone-option" className="text-sm font-medium">
+                      📱 Número Individual
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      id="group-option"
+                      value="group"
+                      checked={recipientType === "group"}
+                      onChange={(e) => setRecipientType(e.target.value as "phone" | "group")}
+                      className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                    />
+                    <Label htmlFor="group-option" className="text-sm font-medium">
+                      👥 Grupo
+                    </Label>
+                  </div>
+                </div>
               </div>
+
+              {/* Campo Destinatário */}
+              {recipientType === "phone" ? (
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Número do WhatsApp</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="Ex: 5511999999999"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="text-base"
+                  />
+                  <p className="text-xs text-gray-500">
+                    Inclua o código do país (ex: 55 para Brasil)
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Label htmlFor="group">Grupo do WhatsApp</Label>
+                  <Select value={selectedGroup} onValueChange={setSelectedGroup}>
+                    <SelectTrigger className="text-base">
+                      <SelectValue placeholder="Selecione um grupo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {groups.map((group: any) => (
+                        <SelectItem key={group.id} value={group.id.toString()}>
+                          👥 {group.name} ({group.memberCount} membros)
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {selectedSession && groups.length === 0 && (
+                    <p className="text-xs text-amber-600">
+                      Nenhum grupo encontrado para esta sessão
+                    </p>
+                  )}
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="content">Mensagem</Label>
@@ -253,36 +328,43 @@ export default function Schedules() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="date">Data</Label>
+                  <Label htmlFor="date" className="text-sm font-medium">📅 Data</Label>
                   <Input
                     id="date"
                     type="date"
                     value={scheduledDate}
                     onChange={(e) => setScheduledDate(e.target.value)}
+                    className="text-base h-11"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="time">Hora</Label>
+                  <Label htmlFor="time" className="text-sm font-medium">🕐 Hora</Label>
                   <Input
                     id="time"
                     type="time"
                     value={scheduledTime}
                     onChange={(e) => setScheduledTime(e.target.value)}
+                    className="text-base h-11"
                   />
                 </div>
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex gap-3 pt-2">
                 <Button 
                   type="submit" 
-                  className="flex-1"
+                  className="flex-1 h-12 text-base font-medium bg-green-600 hover:bg-green-700 text-white"
                   disabled={createScheduledMessage.isPending}
                 >
-                  {createScheduledMessage.isPending ? "Agendando..." : "Agendar"}
+                  {createScheduledMessage.isPending ? (
+                    <>⏳ Agendando...</>
+                  ) : (
+                    <>📅 Agendar Mensagem</>
+                  )}
                 </Button>
                 <Button 
                   type="button" 
                   variant="outline" 
+                  className="h-12 px-6 text-base"
                   onClick={() => setIsDialogOpen(false)}
                 >
                   Cancelar
