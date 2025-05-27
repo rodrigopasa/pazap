@@ -8,7 +8,7 @@ import {
   type Log
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, gte, lte, count, sql } from "drizzle-orm";
+import { eq, desc, and, gte, lte, count, sql, inArray } from "drizzle-orm";
 
 export interface IStorage {
   // Users
@@ -359,29 +359,48 @@ export class DatabaseStorage implements IStorage {
 
   // Dashboard stats
   async getDashboardStats(userId: number): Promise<any> {
-    const userSessions = await db.select().from(sessions).where(eq(sessions.userId, userId));
-    const activeSessions = userSessions.filter(s => s.status === 'connected').length;
-    const totalSessions = userSessions.length;
+    try {
+      const userSessions = await db.select().from(sessions).where(eq(sessions.userId, userId));
+      const activeSessions = userSessions.filter(s => s.status === 'connected').length;
+      const totalSessions = userSessions.length;
 
-    const activeCampaigns = await db.select({ count: count() }).from(campaigns).where(
-      and(
-        eq(campaigns.userId, userId),
-        eq(campaigns.status, 'active')
-      )
-    );
+      const activeCampaignsResult = await db.select({ count: count() }).from(campaigns).where(
+        and(
+          eq(campaigns.userId, userId),
+          eq(campaigns.status, 'active')
+        )
+      );
 
-    const messageStats = await this.getMessageStats(userId);
+      // Simple message count
+      const totalMessages = await db.select({ count: count() }).from(messages)
+        .where(sql`session_id IN (SELECT id FROM sessions WHERE user_id = ${userId})`);
 
-    return {
-      sessions: {
-        active: activeSessions,
-        total: totalSessions
-      },
-      campaigns: {
-        active: activeCampaigns[0]?.count || 0
-      },
-      messages: messageStats
-    };
+      const sentMessages = await db.select({ count: count() }).from(messages)
+        .where(sql`session_id IN (SELECT id FROM sessions WHERE user_id = ${userId}) AND status IN ('sent', 'delivered')`);
+
+      return {
+        sessions: {
+          active: activeSessions,
+          total: totalSessions
+        },
+        campaigns: {
+          active: activeCampaignsResult[0]?.count || 0
+        },
+        messages: {
+          total: totalMessages[0]?.count || 0,
+          sent: sentMessages[0]?.count || 0,
+          pending: 0,
+          failed: 0
+        }
+      };
+    } catch (error) {
+      console.error('Dashboard stats error:', error);
+      return {
+        sessions: { active: 0, total: 0 },
+        campaigns: { active: 0 },
+        messages: { total: 0, sent: 0, pending: 0, failed: 0 }
+      };
+    }
   }
 
   // Reports
@@ -412,7 +431,7 @@ export class DatabaseStorage implements IStorage {
       total: count()
     }).from(messages).where(
       and(
-        inArray(messages.sessionId, sessionIds),
+        sessionIds.length === 1 ? eq(messages.sessionId, sessionIds[0]) : sql`session_id IN (${sessionIds.join(',')})`,
         gte(messages.createdAt, startDate),
         lte(messages.createdAt, endDate)
       )
