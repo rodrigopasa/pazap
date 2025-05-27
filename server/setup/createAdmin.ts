@@ -9,11 +9,12 @@ export async function createAdminUser() {
     const existingAdmin = await db.select().from(users).where(eq(users.username, 'Hisoka')).limit(1);
     
     if (existingAdmin.length === 0) {
-      // Criar o usuário admin
+      // Criar o usuário admin com senha criptografada
+      const hashedPassword = await bcrypt.hash('Antonio1209#', 10);
       await db.insert(users).values({
         username: 'Hisoka',
         email: 'admin@whatsapp.com',
-        password: 'Antonio1209#', // Em produção, você deve usar hash da senha
+        password: hashedPassword,
         role: 'admin'
       });
       
