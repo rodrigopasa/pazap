@@ -32,7 +32,7 @@ const navigation = [
     icon: BellRing,
     description: "Configurar relatórios"
   },
-  { name: "Campanhas", href: "/campaigns", icon: BellRing },
+  { name: "Campanhas", href: "/campaigns", icon: SendIcon },
   { name: "Grupos", href: "/groups", icon: UsersIcon },
   { name: "Aniversários", href: "/birthdays", icon: CakeIcon },
   { name: "Relatórios", href: "/reports", icon: FileTextIcon },
