@@ -1,12 +1,10 @@
 const baileys = require('@whiskeysockets/baileys');
-const { 
-  DisconnectReason, 
-  useMultiFileAuthState, 
-  WAMessageKey, 
-  proto, 
-  fetchLatestBaileysVersion 
-} = baileys;
 const makeWASocket = baileys.makeWASocket;
+const DisconnectReason = baileys.DisconnectReason;
+const useMultiFileAuthState = baileys.useMultiFileAuthState;
+const WAMessageKey = baileys.WAMessageKey;
+const proto = baileys.proto;
+const fetchLatestBaileysVersion = baileys.fetchLatestBaileysVersion;
 import { Boom } from '@hapi/boom';
 import P from 'pino';
 import fs from 'fs';
@@ -59,6 +57,12 @@ export class BaileysClient {
         onStatusUpdate,
         onMessage
       };
+
+      console.log('Creating WhatsApp socket, makeWASocket type:', typeof makeWASocket);
+      
+      if (typeof makeWASocket !== 'function') {
+        throw new Error('makeWASocket is not available');
+      }
 
       const sock = makeWASocket({
         version,
