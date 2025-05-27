@@ -346,15 +346,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Session not found" });
       }
       
-      // Create message records
+      // Create message records with Brazilian phone formatting
+      const { formatBrazilianWhatsAppNumber } = require('./phoneFormatter');
       const messages = [];
       for (const phone of phones) {
+        // Aplicar formatação brasileira e remover @s.whatsapp.net para armazenar
+        const whatsappNumber = formatBrazilianWhatsAppNumber(phone);
+        const formattedPhone = whatsappNumber.replace('@s.whatsapp.net', '');
+        
         const messageData = insertMessageSchema.parse({
           sessionId,
           type,
           content,
           mediaUrl,
-          phone,
+          phone: formattedPhone,
           status: 'pending',
           scheduledAt: scheduledAt ? new Date(scheduledAt) : null
         });
