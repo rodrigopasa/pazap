@@ -873,6 +873,126 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Rate Limiting Control Routes
+  app.get("/api/rate-limit/stats", async (req, res) => {
+    try {
+      const { rateLimiter } = await import('./services/rateLimiter');
+      
+      // Get stats for all sessions
+      const sessions = await storage.getSessions(1); // TODO: Get from auth
+      const sessionStats = {};
+      let totalMessagesLastHour = 0;
+      let totalHealth = 0;
+      let sessionCount = 0;
+
+      for (const session of sessions) {
+        const sessionInfo = rateLimiter.getSessionInfo(session.id);
+        sessionStats[session.id] = {
+          ...sessionInfo.stats,
+          status: sessionInfo.status,
+          health: sessionInfo.health
+        };
+        
+        totalMessagesLastHour += sessionInfo.stats.messagesLastHour || 0;
+        totalHealth += sessionInfo.health || 100;
+        sessionCount++;
+      }
+
+      res.json({
+        sessionStatus: sessionStats,
+        totalMessagesLastHour,
+        averageHealth: sessionCount > 0 ? Math.round(totalHealth / sessionCount) : 100
+      });
+    } catch (error) {
+      console.error('Rate limit stats error:', error);
+      res.status(500).json({ error: "Failed to get rate limit stats" });
+    }
+  });
+
+  app.get("/api/rate-limit/config/:sessionId?", async (req, res) => {
+    try {
+      const { rateLimiter } = await import('./services/rateLimiter');
+      const sessionId = req.params.sessionId ? parseInt(req.params.sessionId) : null;
+      
+      if (!sessionId) {
+        return res.json({
+          maxMessagesPerMinute: 15,
+          maxMessagesPerHour: 200,
+          maxMessagesPerDay: 1000,
+          minDelayBetweenMessages: 3000,
+          maxDelayBetweenMessages: 8000,
+          burstLimit: 5
+        });
+      }
+
+      const sessionInfo = rateLimiter.getSessionInfo(sessionId);
+      res.json(sessionInfo.config);
+    } catch (error) {
+      console.error('Rate limit config error:', error);
+      res.status(500).json({ error: "Failed to get rate limit config" });
+    }
+  });
+
+  app.post("/api/rate-limit/config/:sessionId", async (req, res) => {
+    try {
+      const { rateLimiter } = await import('./services/rateLimiter');
+      const sessionId = parseInt(req.params.sessionId);
+      const config = req.body;
+
+      // Validate config values
+      const validatedConfig = {
+        maxMessagesPerMinute: Math.min(Math.max(config.maxMessagesPerMinute || 15, 5), 20),
+        maxMessagesPerHour: Math.min(Math.max(config.maxMessagesPerHour || 200, 50), 500),
+        maxMessagesPerDay: Math.min(Math.max(config.maxMessagesPerDay || 1000, 100), 2000),
+        minDelayBetweenMessages: Math.min(Math.max(config.minDelayBetweenMessages || 3000, 1000), 10000),
+        maxDelayBetweenMessages: Math.min(Math.max(config.maxDelayBetweenMessages || 8000, 5000), 30000),
+        burstLimit: Math.min(Math.max(config.burstLimit || 5, 1), 10)
+      };
+
+      rateLimiter.setCustomConfig(sessionId, validatedConfig);
+
+      // Log the configuration change
+      await storage.createLog({
+        userId: 1, // TODO: Get from auth
+        level: 'info',
+        source: 'rate_limiter',
+        message: `Rate limit configuration updated for session ${sessionId}`,
+        metadata: validatedConfig,
+        sessionId
+      });
+
+      res.json({ success: true, config: validatedConfig });
+    } catch (error) {
+      console.error('Rate limit config update error:', error);
+      res.status(500).json({ error: "Failed to update rate limit config" });
+    }
+  });
+
+  app.post("/api/rate-limit/reset/:sessionId", async (req, res) => {
+    try {
+      const { rateLimiter } = await import('./services/rateLimiter');
+      const sessionId = parseInt(req.params.sessionId);
+
+      // Reset to default configuration
+      rateLimiter.setCustomConfig(sessionId, {});
+
+      // Log the reset
+      await storage.createLog({
+        userId: 1, // TODO: Get from auth
+        level: 'info',
+        source: 'rate_limiter',
+        message: `Rate limit configuration reset to default for session ${sessionId}`,
+        metadata: {},
+        sessionId
+      });
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Rate limit reset error:', error);
+      res.status(500).json({ error: "Failed to reset rate limit config" });
+    }
+  });
+
   // Initialize cron jobs for scheduled tasks
   scheduleService.initializeCronJobs();
 

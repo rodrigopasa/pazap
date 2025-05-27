@@ -13,6 +13,7 @@ import Groups from "@/pages/groups";
 import Reports from "@/pages/reports";
 import Schedules from "@/pages/schedules";
 import Notifications from "@/pages/notifications";
+import RateLimit from "@/pages/rate-limit";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -25,6 +26,7 @@ function Router() {
         <Route path="/campaigns" component={Campaigns} />
         <Route path="/groups" component={Groups} />
         <Route path="/schedules" component={Schedules} />
+        <Route path="/rate-limit" component={RateLimit} />
         <Route path="/reports" component={Reports} />
         <Route path="/notifications" component={Notifications} />
         <Route component={NotFound} />
