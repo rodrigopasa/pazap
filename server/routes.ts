@@ -14,7 +14,12 @@ import fs from "fs";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
-  const wss = new WebSocketServer({ server: httpServer });
+  
+  // Create WebSocket server on a different path to avoid conflicts with Vite
+  const wss = new WebSocketServer({ 
+    server: httpServer,
+    path: '/api/ws'
+  });
 
   // WebSocket for real-time updates
   wss.on('connection', (ws) => {
@@ -32,20 +37,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     ws.on('close', () => {
       console.log('Client disconnected from WebSocket');
     });
+
+    ws.on('error', (error) => {
+      console.log('WebSocket error:', error);
+    });
   });
 
   // Broadcast function for real-time updates
   const broadcast = (data: any) => {
     wss.clients.forEach((client) => {
       if (client.readyState === 1) { // WebSocket.OPEN
-        client.send(JSON.stringify(data));
+        try {
+          client.send(JSON.stringify(data));
+        } catch (error) {
+          console.log('Error broadcasting message:', error);
+        }
       }
     });
   };
 
   // Set broadcast function in services
   messageService.setBroadcast(broadcast);
-  sessionManager.setBroadcast(broadcast);
+  if (sessionManager && sessionManager.setBroadcast) {
+    sessionManager.setBroadcast(broadcast);
+  }
 
   // API Routes
 
@@ -321,18 +336,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // CSV Upload
-  app.post("/api/contacts/upload", upload.single('csv'), async (req, res) => {
+  app.post("/api/contacts/upload", upload.single('csv'), async (req: any, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ error: "CSV file is required" });
       }
       
       const userId = 1; // TODO: Get from session/auth
-      const contacts = [];
+      const contacts: any[] = [];
       
       // Parse CSV
       await new Promise((resolve, reject) => {
-        fs.createReadStream(req.file!.path)
+        fs.createReadStream(req.file.path)
           .pipe(csv())
           .on('data', (row) => {
             if (row.phone || row.telefone || row.number) {
