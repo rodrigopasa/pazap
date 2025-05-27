@@ -1,11 +1,12 @@
-import { 
-  makeWASocket,
+const baileys = require('@whiskeysockets/baileys');
+const { 
   DisconnectReason, 
   useMultiFileAuthState, 
   WAMessageKey, 
   proto, 
   fetchLatestBaileysVersion 
-} from '@whiskeysockets/baileys';
+} = baileys;
+const makeWASocket = baileys.makeWASocket;
 import { Boom } from '@hapi/boom';
 import P from 'pino';
 import fs from 'fs';

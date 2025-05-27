@@ -73,6 +73,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/sessions/:id/reconnect", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const session = await storage.getSession(id);
+      
+      if (!session) {
+        return res.status(404).json({ error: "Session not found" });
+      }
+      
+      const qrCode = await sessionManager.reconnectSession(session.sessionId);
+      
+      if (qrCode) {
+        await storage.updateSession(id, { qrCode, status: 'qr_needed' });
+      }
+      
+      const updatedSession = await storage.getSession(id);
+      res.json(updatedSession);
+    } catch (error) {
+      console.error('Reconnect error:', error);
+      res.status(500).json({ error: "Failed to reconnect session" });
+    }
+  });
+
+  app.get("/api/sessions/:id/qr", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const session = await storage.getSession(id);
+      
+      if (!session) {
+        return res.status(404).json({ error: "Session not found" });
+      }
+      
+      res.json({ qrCode: session.qrCode, status: session.status });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get QR code" });
+    }
+  });
+
   // Messages
   app.get("/api/messages", async (req, res) => {
     try {
