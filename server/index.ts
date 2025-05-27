@@ -4,6 +4,7 @@ import { setupVite, serveStatic, log } from "./vite";
 import { schedulerService } from "./services/scheduler";
 import { whatsappService } from "./services/whatsapp";
 import { createAdminUser } from "./setup/createAdmin";
+import { ensureSessionTable } from "./setup/database";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import { pool } from "./db";
@@ -82,6 +83,9 @@ app.use((req, res, next) => {
   } else {
     serveStatic(app);
   }
+
+  // Ensure session table exists
+  await ensureSessionTable();
 
   // Initialize scheduler service
   log("Initializing scheduler service...");
