@@ -70,6 +70,11 @@ export interface IStorage {
   // Dashboard stats
   getDashboardStats(userId: number): Promise<any>;
 
+  // Settings
+  getSetting(userId: number, key: string): Promise<Setting | undefined>;
+  setSetting(userId: number, key: string, value: string, description?: string): Promise<Setting>;
+  getSettings(userId: number): Promise<Setting[]>;
+
   // Reports
   getReportsOverview(userId: number, range: string): Promise<any>;
   getReportsChart(userId: number, range: string, sessionId?: number): Promise<any[]>;
@@ -598,6 +603,38 @@ export class DatabaseStorage implements IStorage {
   async getReportsExport(userId: number, range: string, sessionId?: number): Promise<any[]> {
     // Reuse the chart data for export
     return await this.getReportsChart(userId, range, sessionId);
+  }
+
+  // Settings
+  async getSetting(userId: number, key: string): Promise<Setting | undefined> {
+    const [setting] = await db.select().from(settings).where(
+      and(eq(settings.userId, userId), eq(settings.key, key))
+    );
+    return setting || undefined;
+  }
+
+  async setSetting(userId: number, key: string, value: string, description?: string): Promise<Setting> {
+    // Check if setting exists
+    const existing = await this.getSetting(userId, key);
+    
+    if (existing) {
+      // Update existing
+      const [updated] = await db.update(settings)
+        .set({ value, description, updatedAt: new Date() })
+        .where(and(eq(settings.userId, userId), eq(settings.key, key)))
+        .returning();
+      return updated;
+    } else {
+      // Create new
+      const [created] = await db.insert(settings)
+        .values({ userId, key, value, description })
+        .returning();
+      return created;
+    }
+  }
+
+  async getSettings(userId: number): Promise<Setting[]> {
+    return await db.select().from(settings).where(eq(settings.userId, userId));
   }
 }
 

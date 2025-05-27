@@ -2,6 +2,7 @@ import cron from 'node-cron';
 import { storage } from '../storage';
 import { messageService } from './messageService';
 import { campaignService } from './campaignService';
+import { notificationService } from './notificationService';
 
 class ScheduleService {
   private jobs: Map<string, cron.ScheduledTask> = new Map();
