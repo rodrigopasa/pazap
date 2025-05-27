@@ -591,6 +591,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Groups endpoints
+  app.get("/api/groups", async (req, res) => {
+    try {
+      const sessionId = req.query.sessionId ? parseInt(req.query.sessionId as string) : 2; // Default to first session
+      const groups = await storage.getGroups(sessionId);
+      res.json(groups);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get groups" });
+    }
+  });
+
+  app.post("/api/groups", async (req, res) => {
+    try {
+      const { sessionId, name, description, members } = req.body;
+      
+      // Create group via WhatsApp
+      const groupId = await sessionManager.createGroup(sessionId, name, members || []);
+      
+      if (groupId) {
+        // Save to database
+        const group = await storage.createGroup({
+          sessionId: parseInt(sessionId),
+          groupId,
+          name,
+          description: description || '',
+          memberCount: members?.length || 0,
+          isActive: true
+        });
+        res.json(group);
+      } else {
+        res.status(400).json({ error: "Failed to create WhatsApp group" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create group" });
+    }
+  });
+
+  // Scheduled messages endpoints
+  app.get("/api/scheduled", async (req, res) => {
+    try {
+      const scheduledMessages = await storage.getPendingScheduledMessages();
+      res.json(scheduledMessages);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get scheduled messages" });
+    }
+  });
+
   // Initialize cron jobs for scheduled tasks
   scheduleService.initializeCronJobs();
 

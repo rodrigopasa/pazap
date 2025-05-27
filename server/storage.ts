@@ -412,7 +412,7 @@ export class DatabaseStorage implements IStorage {
       total: count()
     }).from(messages).where(
       and(
-        sql`session_id = ANY(${sessionIds})`,
+        inArray(messages.sessionId, sessionIds),
         gte(messages.createdAt, startDate),
         lte(messages.createdAt, endDate)
       )
