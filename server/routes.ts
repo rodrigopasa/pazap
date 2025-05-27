@@ -239,6 +239,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Messages
+  app.get("/api/messages/scheduled", async (req, res) => {
+    try {
+      const userId = 1; // TODO: Get from session/auth
+      const scheduledMessages = await storage.getPendingScheduledMessages();
+      
+      // Join with session data
+      const enrichedMessages = await Promise.all(
+        scheduledMessages.map(async (message) => {
+          const session = await storage.getSession(message.sessionId);
+          return {
+            ...message,
+            sessionName: session?.name || 'Sessão desconhecida'
+          };
+        })
+      );
+      
+      res.json(enrichedMessages);
+    } catch (error: any) {
+      console.error("Error fetching scheduled messages:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/messages/schedule", async (req, res) => {
+    try {
+      const { sessionId, phone, content, scheduledDate, scheduledTime } = req.body;
+      
+      if (!sessionId || !phone || !content || !scheduledDate || !scheduledTime) {
+        return res.status(400).json({ error: "Todos os campos são obrigatórios" });
+      }
+
+      const scheduledAt = new Date(`${scheduledDate}T${scheduledTime}`);
+      
+      if (scheduledAt <= new Date()) {
+        return res.status(400).json({ error: "A data e hora devem ser no futuro" });
+      }
+
+      const message = await storage.createMessage({
+        sessionId: parseInt(sessionId),
+        type: 'text',
+        content,
+        phone,
+        status: 'scheduled',
+        scheduledAt
+      });
+
+      res.json(message);
+    } catch (error: any) {
+      console.error("Error scheduling message:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/messages/scheduled/:id", async (req, res) => {
+    try {
+      const messageId = parseInt(req.params.id);
+      await storage.updateMessage(messageId, { status: 'cancelled' });
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Error cancelling scheduled message:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.get("/api/messages", async (req, res) => {
     try {
       const sessionId = req.query.sessionId ? parseInt(req.query.sessionId as string) : undefined;

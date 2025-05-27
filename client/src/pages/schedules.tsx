@@ -219,13 +219,36 @@ export default function Schedules() {
 
               <div className="space-y-2">
                 <Label htmlFor="content">Mensagem</Label>
-                <Textarea
-                  id="content"
-                  placeholder="Digite sua mensagem..."
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  rows={4}
-                />
+                <div className="space-y-2">
+                  <Textarea
+                    id="content"
+                    placeholder="Digite sua mensagem... (Você pode incluir links como https://exemplo.com)"
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    rows={4}
+                  />
+                  <div className="flex justify-between items-center">
+                    <div className="text-xs text-gray-500">
+                      ✓ Links são automaticamente detectados • Use *negrito* e _itálico_
+                    </div>
+                    <span className="text-xs text-gray-400">
+                      {content.length}/2000
+                    </span>
+                  </div>
+                  {/* Preview de Links */}
+                  {content && content.match(/(https?:\/\/[^\s]+)/g) && (
+                    <div className="bg-blue-50 p-2 rounded border-l-4 border-blue-200">
+                      <p className="text-xs font-medium text-blue-800">Links detectados:</p>
+                      <div className="space-y-1 mt-1">
+                        {content.match(/(https?:\/\/[^\s]+)/g)?.map((link, index) => (
+                          <div key={index} className="text-xs text-blue-600 break-all">
+                            📎 {link}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
