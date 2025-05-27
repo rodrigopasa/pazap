@@ -43,7 +43,7 @@ export default function Messages() {
 
   const { data: messages, isLoading } = useQuery({
     queryKey: ["/api/messages", filterSession],
-    queryFn: () => messageAPI.getAll(filterSession ? parseInt(filterSession) : undefined, 100),
+    queryFn: () => messageAPI.getAll(filterSession && filterSession !== "all" ? parseInt(filterSession) : undefined, 100),
     refetchInterval: 10000,
   });
 
@@ -348,7 +348,7 @@ export default function Messages() {
                   <SelectValue placeholder="Todas as sessões" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todas as sessões</SelectItem>
+                  <SelectItem value="all">Todas as sessões</SelectItem>
                   {sessions?.map((session: any) => (
                     <SelectItem key={session.id} value={session.id.toString()}>
                       {session.name}
