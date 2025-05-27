@@ -1,9 +1,9 @@
-import makeWASocket, { 
+import { 
+  makeWASocket,
   DisconnectReason, 
   useMultiFileAuthState, 
   WAMessageKey, 
   proto, 
-  MessageRetryMap,
   fetchLatestBaileysVersion 
 } from '@whiskeysockets/baileys';
 import { Boom } from '@hapi/boom';
@@ -68,7 +68,6 @@ export class BaileysClient {
         keepAliveIntervalMs: 30 * 1000,
         markOnlineOnConnect: true,
         generateHighQualityLinkPreview: true,
-        msgRetryCounterMap: {},
       });
 
       session.sock = sock;
