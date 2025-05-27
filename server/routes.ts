@@ -737,45 +737,91 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/groups/sync", async (req, res) => {
     try {
       const { sessionId } = req.body;
+      
+      if (!sessionId) {
+        return res.status(400).json({ error: "Session ID is required" });
+      }
+      
       const session = await storage.getSession(sessionId);
       
       if (!session) {
         return res.status(404).json({ error: "Session not found" });
       }
 
-      // Buscar grupos do WhatsApp
+      // Verificar se a sessão está conectada
       const { whatsappService } = await import('./services/whatsapp');
+      if (!whatsappService.isSessionConnected(session.sessionId)) {
+        return res.status(400).json({ error: "WhatsApp session is not connected" });
+      }
+
+      // Buscar grupos do WhatsApp
       const whatsappGroups = await whatsappService.getGroupsFromWhatsApp(session.sessionId);
+      
+      // Buscar grupos existentes no banco
+      const existingGroups = await storage.getGroups(sessionId);
+      const existingGroupIds = new Set(existingGroups.map(g => g.groupId));
       
       // Sincronizar com o banco de dados
       const syncedGroups = [];
+      const updatedGroups = [];
+      
       for (const groupData of whatsappGroups) {
         try {
-          const groupPayload = {
-            sessionId,
-            groupId: groupData.whatsappId,
-            name: groupData.name,
-            description: groupData.description || '',
-            memberCount: groupData.memberCount || 0,
-            isActive: true
-          };
-          
-          const group = await storage.createGroup(groupPayload);
-          syncedGroups.push(group);
+          if (existingGroupIds.has(groupData.whatsappId)) {
+            // Grupo já existe, apenas atualizar informações
+            const existingGroup = existingGroups.find(g => g.groupId === groupData.whatsappId);
+            if (existingGroup) {
+              const updatedGroup = await storage.updateGroup(existingGroup.id, {
+                name: groupData.name,
+                description: groupData.description || '',
+                memberCount: groupData.memberCount || 0,
+                isActive: true
+              });
+              updatedGroups.push(updatedGroup);
+            }
+          } else {
+            // Novo grupo, criar no banco
+            const groupPayload = {
+              sessionId,
+              groupId: groupData.whatsappId,
+              name: groupData.name,
+              description: groupData.description || '',
+              memberCount: groupData.memberCount || 0,
+              isActive: true
+            };
+            
+            const group = await storage.createGroup(groupPayload);
+            syncedGroups.push(group);
+          }
         } catch (error) {
-          console.log('Group already exists or error:', groupData.name);
+          console.error('Error processing group:', groupData.name, error);
+        }
+      }
+
+      // Marcar grupos que não existem mais no WhatsApp como inativos
+      const whatsappGroupIds = new Set(whatsappGroups.map(g => g.whatsappId));
+      const inactiveGroups = [];
+      
+      for (const existingGroup of existingGroups) {
+        if (!whatsappGroupIds.has(existingGroup.groupId) && existingGroup.isActive) {
+          const updatedGroup = await storage.updateGroup(existingGroup.id, {
+            isActive: false
+          });
+          inactiveGroups.push(updatedGroup);
         }
       }
 
       res.json({ 
-        synced: syncedGroups.length, 
+        synced: syncedGroups.length,
+        updated: updatedGroups.length, 
+        deactivated: inactiveGroups.length,
         total: whatsappGroups.length,
-        groups: syncedGroups,
-        message: `${syncedGroups.length} grupos sincronizados com sucesso!`
+        groups: [...syncedGroups, ...updatedGroups],
+        message: `Sincronização completa: ${syncedGroups.length} novos grupos, ${updatedGroups.length} atualizados, ${inactiveGroups.length} desativados`
       });
     } catch (error: any) {
       console.error("Error syncing groups:", error);
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: error.message || "Failed to sync groups" });
     }
   });
 

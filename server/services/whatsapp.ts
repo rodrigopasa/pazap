@@ -241,41 +241,73 @@ class WhatsAppService {
     }
 
     try {
-      // Buscar todos os chats do tipo grupo
-      const chats = await session.socket.getChats();
+      await this.createLog(sessionId, 'info', 'Starting group synchronization...');
+      
+      // Buscar todos os chats usando store
+      const store = session.store;
+      const chats = store.chats.all();
       const groups = chats.filter(chat => chat.id.endsWith('@g.us'));
+      
+      await this.createLog(sessionId, 'info', `Found ${groups.length} groups in chat list`);
       
       const groupsData = [];
       
       for (const group of groups) {
         try {
-          // Buscar metadados do grupo
-          const groupMetadata = await session.socket.groupMetadata(group.id);
+          let groupMetadata = null;
           
-          groupsData.push({
-            whatsappId: group.id,
-            name: groupMetadata.subject || group.name || 'Sem nome',
-            description: groupMetadata.desc || '',
-            memberCount: groupMetadata.participants?.length || 0,
-            isAdmin: groupMetadata.participants?.find(p => 
-              p.id.includes(session.socket.user?.id?.split(':')[0]) && 
+          // Tentar buscar metadados do grupo
+          try {
+            groupMetadata = await session.socket.groupMetadata(group.id);
+          } catch (metaError) {
+            await this.createLog(sessionId, 'warn', `Could not fetch metadata for group ${group.id}: ${metaError.message}`);
+          }
+          
+          // Buscar informações do usuário atual
+          const currentUser = session.socket.user?.id;
+          let isAdmin = false;
+          
+          if (groupMetadata && groupMetadata.participants && currentUser) {
+            const userNumber = currentUser.split(':')[0];
+            isAdmin = groupMetadata.participants.some(p => 
+              p.id.includes(userNumber) && 
               (p.admin === 'admin' || p.admin === 'superadmin')
-            ) ? true : false
-          });
+            );
+          }
+          
+          const groupData = {
+            whatsappId: group.id,
+            name: groupMetadata?.subject || group.name || `Grupo ${group.id.split('@')[0]}`,
+            description: groupMetadata?.desc || '',
+            memberCount: groupMetadata?.participants?.length || 0,
+            isAdmin: isAdmin,
+            lastMessageTime: group.conversationTimestamp || null,
+            unreadCount: group.unreadCount || 0
+          };
+          
+          groupsData.push(groupData);
+          
+          await this.createLog(sessionId, 'debug', `Processed group: ${groupData.name} (${groupData.memberCount} members)`);
+          
         } catch (error) {
-          // Se não conseguir buscar metadados, adiciona informações básicas
+          await this.createLog(sessionId, 'warn', `Error processing group ${group.id}: ${error.message}`);
+          
+          // Adicionar grupo com informações básicas mesmo se houver erro
           groupsData.push({
             whatsappId: group.id,
-            name: group.name || 'Sem nome',
+            name: group.name || `Grupo ${group.id.split('@')[0]}`,
             description: '',
             memberCount: 0,
-            isAdmin: false
+            isAdmin: false,
+            lastMessageTime: group.conversationTimestamp || null,
+            unreadCount: group.unreadCount || 0
           });
         }
       }
       
-      await this.createLog(sessionId, 'info', `Found ${groupsData.length} groups`);
+      await this.createLog(sessionId, 'info', `Successfully processed ${groupsData.length} groups`);
       return groupsData;
+      
     } catch (error) {
       await this.createLog(sessionId, 'error', `Failed to get groups: ${error.message}`);
       throw error;

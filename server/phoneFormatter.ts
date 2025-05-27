@@ -3,10 +3,56 @@
  * 
  * Regras para números brasileiros:
  * - Código do país: +55
- * - O WhatsApp não usa o 9º dígito adicional que foi introduzido para celulares
+ * - DDDs válidos: 11-99
+ * - Celulares: começam com 6, 7, 8 ou 9 (após DDD)
+ * - Fixos: começam com 2, 3, 4 ou 5 (após DDD)
+ * - O WhatsApp não usa o 9º dígito adicional para celulares
  * - Formato: 55 + DDD (2 dígitos) + número (8 dígitos)
- * - Exemplo: 5511987654321 vira 5511987654321@s.whatsapp.net
  */
+
+// DDDs válidos no Brasil
+const VALID_DDDS = [
+  11, 12, 13, 14, 15, 16, 17, 18, 19, // SP
+  21, 22, 24, // RJ
+  27, 28, // ES
+  31, 32, 33, 34, 35, 37, 38, // MG
+  41, 42, 43, 44, 45, 46, // PR
+  47, 48, 49, // SC
+  51, 53, 54, 55, // RS
+  61, // DF
+  62, 64, // GO
+  63, // TO
+  65, 66, // MT
+  67, // MS
+  68, // AC
+  69, // RO
+  71, 73, 74, 75, 77, // BA
+  79, // SE
+  81, 87, // PE
+  82, // AL
+  83, // PB
+  84, // RN
+  85, 88, // CE
+  86, 89, // PI
+  91, 93, 94, // PA
+  92, 97, // AM
+  95, // RR
+  96, // AP
+  98, 99  // MA
+];
+
+function isValidDDD(ddd: string): boolean {
+  const dddNumber = parseInt(ddd, 10);
+  return VALID_DDDS.includes(dddNumber);
+}
+
+function isCellphone(firstDigit: string): boolean {
+  return ['6', '7', '8', '9'].includes(firstDigit);
+}
+
+function isLandline(firstDigit: string): boolean {
+  return ['2', '3', '4', '5'].includes(firstDigit);
+}
 
 export function formatBrazilianWhatsAppNumber(phone: string): string {
   if (!phone) return '';
@@ -19,45 +65,65 @@ export function formatBrazilianWhatsAppNumber(phone: string): string {
     cleaned = cleaned.substring(2);
   }
   
-  // Se não começar com 55, adiciona o código do Brasil
-  if (!cleaned.startsWith('55')) {
-    cleaned = '55' + cleaned;
+  // Normalizar para formato sem código do país primeiro
+  if (cleaned.startsWith('55') && cleaned.length >= 12) {
+    cleaned = cleaned.substring(2);
   }
   
-  // Tratamento especial para números brasileiros com 9º dígito
-  if (cleaned.length === 13) { // 55 + DDD (2) + 9 + número (8)
-    const countryCode = cleaned.substring(0, 2); // 55
-    const areaCode = cleaned.substring(2, 4);    // DDD
-    const ninthDigit = cleaned.substring(4, 5);  // 9 adicional
-    const number = cleaned.substring(5, 13);     // 8 dígitos
+  // Validar e processar números com 11 dígitos (DDD + 9 dígito + 8 dígitos)
+  if (cleaned.length === 11) {
+    const ddd = cleaned.substring(0, 2);
+    const firstDigit = cleaned.substring(2, 3);
+    const secondDigit = cleaned.substring(3, 4);
     
-    // Se o 9º dígito está presente e é realmente um 9, remove ele
-    if (ninthDigit === '9' && number.length === 8) {
-      cleaned = countryCode + areaCode + number;
+    // Validar DDD
+    if (!isValidDDD(ddd)) {
+      console.warn(`DDD inválido: ${ddd} em ${phone}`);
+      return '';
     }
-  } else if (cleaned.length === 12) { // 55 + DDD (2) + número (8) - formato correto
-    // Já está no formato correto
-  } else if (cleaned.length === 11) { // DDD + 9 + número (8)
-    const areaCode = cleaned.substring(0, 2);    // DDD
-    const ninthDigit = cleaned.substring(2, 3);  // 9 adicional
-    const number = cleaned.substring(3, 11);     // 8 dígitos
     
-    // Se tem o 9º dígito, remove
-    if (ninthDigit === '9' && number.length === 8) {
-      cleaned = '55' + areaCode + number;
+    // Se é celular e tem 9 na posição correta, é o 9º dígito adicional
+    if (firstDigit === '9' && isCellphone(secondDigit)) {
+      // Remove o 9º dígito adicional
+      const number = cleaned.substring(3, 11);
+      cleaned = ddd + number;
+    } else if (isLandline(firstDigit)) {
+      // Telefone fixo não precisa de alteração
+      cleaned = cleaned;
     } else {
-      cleaned = '55' + cleaned;
+      console.warn(`Número com formato inesperado: ${phone}`);
+      return '';
     }
-  } else if (cleaned.length === 10) { // DDD + número (8) - formato correto sem código do país
-    cleaned = '55' + cleaned;
+  }
+  // Processar números com 10 dígitos (DDD + 8 dígitos)
+  else if (cleaned.length === 10) {
+    const ddd = cleaned.substring(0, 2);
+    const firstDigit = cleaned.substring(2, 3);
+    
+    // Validar DDD
+    if (!isValidDDD(ddd)) {
+      console.warn(`DDD inválido: ${ddd} em ${phone}`);
+      return '';
+    }
+    
+    // Verificar se é celular ou fixo válido
+    if (!isCellphone(firstDigit) && !isLandline(firstDigit)) {
+      console.warn(`Primeiro dígito inválido: ${firstDigit} em ${phone}`);
+      return '';
+    }
+  } else {
+    console.warn(`Número brasileiro com tamanho inválido: ${phone} (${cleaned.length} dígitos)`);
+    return '';
   }
   
-  // Validação final: deve ter exatamente 12 dígitos (55 + DDD + 8 dígitos)
-  if (cleaned.length !== 12) {
-    console.warn(`Número brasileiro inválido: ${phone} -> ${cleaned} (${cleaned.length} dígitos)`);
+  // Validação final: deve ter exatamente 10 dígitos (DDD + 8 dígitos)
+  if (cleaned.length !== 10) {
+    console.warn(`Número brasileiro inválido após processamento: ${phone} -> ${cleaned} (${cleaned.length} dígitos)`);
+    return '';
   }
   
-  return cleaned + '@s.whatsapp.net';
+  // Adicionar código do país e sufixo do WhatsApp
+  return '55' + cleaned + '@s.whatsapp.net';
 }
 
 export function formatBrazilianPhoneDisplay(phone: string): string {
@@ -65,13 +131,37 @@ export function formatBrazilianPhoneDisplay(phone: string): string {
   
   const cleaned = phone.replace(/\D/g, '');
   
+  // Formato com código do país (12 dígitos: 55 + DDD + 8 dígitos)
   if (cleaned.length === 12 && cleaned.startsWith('55')) {
-    const areaCode = cleaned.substring(2, 4);
+    const ddd = cleaned.substring(2, 4);
     const number = cleaned.substring(4, 12);
     const firstPart = number.substring(0, 4);
     const secondPart = number.substring(4, 8);
     
-    return `+55 (${areaCode}) ${firstPart}-${secondPart}`;
+    return `+55 (${ddd}) ${firstPart}-${secondPart}`;
+  }
+  
+  // Formato sem código do país (10 dígitos: DDD + 8 dígitos)
+  if (cleaned.length === 10) {
+    const ddd = cleaned.substring(0, 2);
+    const number = cleaned.substring(2, 10);
+    const firstPart = number.substring(0, 4);
+    const secondPart = number.substring(4, 8);
+    
+    return `(${ddd}) ${firstPart}-${secondPart}`;
+  }
+  
+  // Formato com 9º dígito (11 dígitos: DDD + 9 + 8 dígitos)
+  if (cleaned.length === 11) {
+    const ddd = cleaned.substring(0, 2);
+    const ninthDigit = cleaned.substring(2, 3);
+    const number = cleaned.substring(3, 11);
+    const firstPart = number.substring(0, 4);
+    const secondPart = number.substring(4, 8);
+    
+    if (ninthDigit === '9' && isCellphone(number.substring(0, 1))) {
+      return `(${ddd}) 9${firstPart}-${secondPart}`;
+    }
   }
   
   return phone;
