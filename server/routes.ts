@@ -1089,6 +1089,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Auto Replies endpoints
+  app.get("/api/auto-replies", async (req, res) => {
+    try {
+      const userId = 1; // TODO: Get from session/auth
+      const sessionId = req.query.sessionId ? parseInt(req.query.sessionId as string) : undefined;
+      const autoReplies = await storage.getAutoReplies(userId, sessionId);
+      res.json(autoReplies);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get auto replies" });
+    }
+  });
+
+  app.post("/api/auto-replies", async (req, res) => {
+    try {
+      const userId = 1; // TODO: Get from session/auth
+      const autoReplyData = {
+        ...req.body,
+        userId
+      };
+      
+      const autoReply = await storage.createAutoReply(autoReplyData);
+      res.json(autoReply);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create auto reply" });
+    }
+  });
+
+  app.put("/api/auto-replies/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const autoReply = await storage.updateAutoReply(id, req.body);
+      res.json(autoReply);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update auto reply" });
+    }
+  });
+
+  app.delete("/api/auto-replies/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteAutoReply(id);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete auto reply" });
+    }
+  });
+
+  app.post("/api/auto-replies/:id/toggle", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { isActive } = req.body;
+      const { autoReplyService } = await import('./services/autoReplyService');
+      await autoReplyService.toggleAutoReply(id, isActive);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to toggle auto reply" });
+    }
+  });
+
+  app.get("/api/auto-replies/stats", async (req, res) => {
+    try {
+      const userId = 1; // TODO: Get from session/auth
+      const { autoReplyService } = await import('./services/autoReplyService');
+      const stats = await autoReplyService.getAutoReplyStats(userId);
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get auto reply stats" });
+    }
+  });
+
   // Initialize cron jobs for scheduled tasks
   scheduleService.initializeCronJobs();
 
