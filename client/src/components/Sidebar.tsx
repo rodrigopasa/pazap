@@ -26,7 +26,7 @@ const navigation = [
   { name: "Dashboard", href: "/", icon: BarChart3 },
   { name: "Sessões", href: "/sessions", icon: Smartphone },
   { name: "Mensagens", href: "/messages", icon: MessageSquare },
-  { name: "Agendamentos", href: "/scheduled", icon: Clock },
+  { name: "Agendamentos", href: "/schedules", icon: Clock },
   { name: "Campanhas", href: "/campaigns", icon: Megaphone },
   { name: "Grupos", href: "/groups", icon: Users },
   { name: "Aniversários", href: "/birthdays", icon: Cake },
