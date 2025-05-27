@@ -31,6 +31,12 @@ interface Session {
   phone?: string;
 }
 
+interface Group {
+  id: number;
+  name: string;
+  memberCount: number;
+}
+
 export default function Schedules() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedSession, setSelectedSession] = useState<string>("");
@@ -53,7 +59,7 @@ export default function Schedules() {
   })
 
   // Buscar grupos da sessão selecionada
-  const { data: groups = [] } = useQuery({
+  const { data: groups = [] } = useQuery<Group[]>({
     queryKey: ["/api/groups", selectedSession],
     enabled: !!selectedSession && recipientType === "group",
   });
@@ -202,30 +208,51 @@ export default function Schedules() {
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Agendar Mensagem</DialogTitle>
-              <DialogDescription>
-                Configure quando e para quem enviar sua mensagem
-              </DialogDescription>
+            <DialogHeader className="space-y-3 pb-4 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
+                  <MessageCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
+                </div>
+                <div>
+                  <DialogTitle className="text-xl font-semibold">Agendar Mensagem</DialogTitle>
+                  <DialogDescription className="text-gray-600 dark:text-gray-400">
+                    Configure quando e para quem enviar sua mensagem automaticamente
+                  </DialogDescription>
+                </div>
+              </div>
             </DialogHeader>
             
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="session">Sessão</Label>
+            <form onSubmit={handleSubmit} className="space-y-6 pt-4">
+              {/* Session Selection with improved design */}
+              <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+                    <MessageCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <Label htmlFor="session" className="text-base font-semibold">Sessão do WhatsApp</Label>
+                </div>
                 <Select value={selectedSession} onValueChange={setSelectedSession}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione uma sessão" />
+                  <SelectTrigger className="h-12 text-base">
+                    <SelectValue placeholder="Selecione uma sessão conectada" />
                   </SelectTrigger>
                   <SelectContent>
                     {sessions
                       .filter((session) => session.status === "connected")
                       .map((session) => (
                         <SelectItem key={session.id} value={session.id.toString()}>
-                          {session.name} {session.phone && `(${session.phone})`}
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                            {session.name} {session.phone && `(${session.phone})`}
+                          </div>
                         </SelectItem>
                       ))}
                   </SelectContent>
                 </Select>
+                {sessions.filter(session => session.status === "connected").length === 0 && (
+                  <p className="text-sm text-amber-600 bg-amber-50 dark:bg-amber-900/30 p-2 rounded">
+                    ⚠️ Nenhuma sessão conectada. Conecte uma sessão primeiro.
+                  </p>
+                )}
               </div>
 
               {/* Tipo de Destinatário */}
@@ -285,7 +312,7 @@ export default function Schedules() {
                       <SelectValue placeholder="Selecione um grupo" />
                     </SelectTrigger>
                     <SelectContent>
-                      {groups.map((group: any) => (
+                      {groups.map((group) => (
                         <SelectItem key={group.id} value={group.id.toString()}>
                           👥 {group.name} ({group.memberCount} membros)
                         </SelectItem>
