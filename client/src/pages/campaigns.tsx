@@ -180,12 +180,42 @@ export default function Campaigns() {
       return;
     }
 
+    // Validação específica para campanhas em massa e agendadas
+    if ((type === 'bulk' || type === 'scheduled') && !phoneNumbers.trim()) {
+      toast({
+        title: "Números obrigatórios",
+        description: "Para campanhas em massa e agendadas, os números de telefone são obrigatórios",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Processar números de telefone
+    let processedNumbers: string[] = [];
+    if (type === 'bulk' || type === 'scheduled') {
+      processedNumbers = phoneNumbers
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line.length > 0)
+        .map(phone => phone.replace(/\D/g, '')); // Remove caracteres não numéricos
+      
+      if (processedNumbers.length === 0) {
+        toast({
+          title: "Números inválidos",
+          description: "Nenhum número válido foi encontrado",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     createCampaignMutation.mutate({
       name: name.trim(),
       description: description.trim(),
       type,
       messageTemplate: messageTemplate.trim(),
-      scheduledAt: scheduledAt || undefined
+      scheduledAt: scheduledAt || undefined,
+      phoneNumbers: processedNumbers
     });
   };
 
@@ -460,6 +490,29 @@ export default function Campaigns() {
                       className="rounded-t-none border-t-0 focus:ring-0"
                     />
                   </div>
+                  
+                  {/* Campo de números para campanhas em massa */}
+                  {(type === 'bulk' || type === 'scheduled') && (
+                    <div>
+                      <Label htmlFor="phoneNumbers">Números de Telefone *</Label>
+                      <p className="text-xs text-gray-500 mb-2">
+                        Cole os números um por linha. Formato: (11) 99999-9999 ou 11999999999
+                      </p>
+                      <Textarea
+                        id="phoneNumbers"
+                        placeholder="Cole os números aqui, um por linha:&#10;(11) 99999-9999&#10;(21) 88888-8888&#10;11977777777"
+                        value={phoneNumbers}
+                        onChange={(e) => setPhoneNumbers(e.target.value)}
+                        rows={6}
+                        className="font-mono text-sm"
+                      />
+                      {phoneNumbers && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          {phoneNumbers.split('\n').filter(line => line.trim()).length} números detectados
+                        </p>
+                      )}
+                    </div>
+                  )}
                   
                   {type === 'scheduled' && (
                     <div>
