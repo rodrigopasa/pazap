@@ -20,7 +20,18 @@ const navigation = [
   { name: "Dashboard", href: "/", icon: BarChart3Icon },
   { name: "Sessões", href: "/sessions", icon: SmartphoneIcon },
   { name: "Envio de Mensagens", href: "/messages", icon: SendIcon },
-  { name: "Agendamentos", href: "/schedules", icon: ClockIcon },
+  { 
+    name: "Agendamentos", 
+    href: "/schedules", 
+    icon: ClockIcon,
+    description: "Agendar envios"
+  },
+  { 
+    name: "Notificações", 
+    href: "/notifications", 
+    icon: BellRing,
+    description: "Configurar relatórios"
+  },
   { name: "Campanhas", href: "/campaigns", icon: BellRing },
   { name: "Grupos", href: "/groups", icon: UsersIcon },
   { name: "Aniversários", href: "/birthdays", icon: CakeIcon },

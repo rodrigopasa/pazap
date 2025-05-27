@@ -11,10 +11,11 @@ import { insertSessionSchema, insertMessageSchema, insertCampaignSchema, insertB
 import { z } from "zod";
 import csv from "csv-parser";
 import fs from "fs";
+import { notificationService } from './services/notificationService';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
-  
+
   // Create WebSocket server on a different path to avoid conflicts with Vite
   const wss = new WebSocketServer({ 
     server: httpServer,
@@ -24,7 +25,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // WebSocket for real-time updates
   wss.on('connection', (ws) => {
     console.log('Client connected to WebSocket');
-    
+
     ws.on('message', (message) => {
       try {
         const data = JSON.parse(message.toString());
@@ -131,15 +132,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const range = req.query.range as string || '7d';
       const format = req.query.format as string || 'csv';
       const sessionId = req.query.sessionId ? parseInt(req.query.sessionId as string) : undefined;
-      
+
       const exportData = await storage.getReportsExport(userId, range, sessionId);
-      
+
       if (format === 'csv') {
         const csvHeader = 'Date,Sent,Delivered,Failed,Success Rate\n';
         const csvContent = exportData.map((row: any) => 
           `${row.date},${row.sent},${row.delivered},${row.failed},${row.successRate}`
         ).join('\n');
-        
+
         res.setHeader('Content-Type', 'text/csv');
         res.setHeader('Content-Disposition', `attachment; filename="whatsapp-report-${range}.csv"`);
         res.send(csvHeader + csvContent);
@@ -170,16 +171,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...req.body,
         userId: 1 // TODO: Get from session/auth
       });
-      
+
       const session = await storage.createSession(data);
-      
+
       // Initialize WhatsApp session
       const qrCode = await sessionManager.createSession(session.sessionId, session.name);
-      
+
       if (qrCode) {
         await storage.updateSession(session.id, { qrCode, status: 'qr_needed' });
       }
-      
+
       const updatedSession = await storage.getSession(session.id);
       res.json(updatedSession);
     } catch (error) {
@@ -192,7 +193,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const updates = req.body;
-      
+
       const session = await storage.updateSession(id, updates);
       res.json(session);
     } catch (error) {
@@ -204,12 +205,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const session = await storage.getSession(id);
-      
+
       if (session) {
         await sessionManager.deleteSession(session.sessionId);
         await storage.deleteSession(id);
       }
-      
+
       res.json({ success: true });
     } catch (error) {
       res.status(500).json({ error: "Failed to delete session" });
@@ -220,17 +221,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const session = await storage.getSession(id);
-      
+
       if (!session) {
         return res.status(404).json({ error: "Session not found" });
       }
-      
+
       const qrCode = await sessionManager.reconnectSession(session.sessionId);
-      
+
       if (qrCode) {
         await storage.updateSession(id, { qrCode, status: 'qr_needed' });
       }
-      
+
       const updatedSession = await storage.getSession(id);
       res.json(updatedSession);
     } catch (error) {
@@ -243,7 +244,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = 1; // TODO: Get from session/auth
       const scheduledMessages = await storage.getPendingScheduledMessages();
-      
+
       // Join with session data
       const enrichedMessages = await Promise.all(
         scheduledMessages.map(async (message) => {
@@ -254,7 +255,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           };
         })
       );
-      
+
       res.json(enrichedMessages);
     } catch (error: any) {
       console.error("Error fetching scheduled messages:", error);
@@ -265,20 +266,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/messages/schedule", async (req, res) => {
     try {
       const { sessionId, recipientType, phone, groupId, content, scheduledDate, scheduledTime } = req.body;
-      
+
       const recipient = recipientType === "phone" ? phone : groupId;
-      
+
       if (!sessionId || !recipient || !content || !scheduledDate || !scheduledTime) {
         return res.status(400).json({ error: "Todos os campos são obrigatórios" });
       }
 
       const scheduledAt = new Date(`${scheduledDate}T${scheduledTime}`);
       const now = new Date();
-      
+
       if (isNaN(scheduledAt.getTime())) {
         return res.status(400).json({ error: "Data e hora inválidas" });
       }
-      
+
       if (scheduledAt <= now) {
         return res.status(400).json({ error: "A data e hora devem ser no futuro" });
       }
@@ -286,7 +287,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Aplicar formatação brasileira para números de telefone
       const { formatBrazilianWhatsAppNumber } = require('./phoneFormatter');
       let formattedPhone = recipientType === "phone" ? phone : `group:${groupId}`;
-      
+
       if (recipientType === "phone") {
         const whatsappNumber = formatBrazilianWhatsAppNumber(phone);
         // Remover @s.whatsapp.net para armazenar apenas o número limpo
@@ -324,7 +325,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const sessionId = req.query.sessionId ? parseInt(req.query.sessionId as string) : undefined;
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 100;
-      
+
       const messages = await storage.getMessages(sessionId, limit);
       res.json(messages);
     } catch (error) {
@@ -335,17 +336,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/messages/send", async (req, res) => {
     try {
       const { sessionId, phones, content, type = 'text', mediaUrl, scheduledAt } = req.body;
-      
+
       // Validate phones array
       if (!Array.isArray(phones) || phones.length === 0) {
         return res.status(400).json({ error: "Phones array is required" });
       }
-      
+
       const session = await storage.getSession(sessionId);
       if (!session) {
         return res.status(404).json({ error: "Session not found" });
       }
-      
+
       // Create message records with Brazilian phone formatting
       const { formatBrazilianWhatsAppNumber } = require('./phoneFormatter');
       const messages = [];
@@ -353,7 +354,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Aplicar formatação brasileira e remover @s.whatsapp.net para armazenar
         const whatsappNumber = formatBrazilianWhatsAppNumber(phone);
         const formattedPhone = whatsappNumber.replace('@s.whatsapp.net', '');
-        
+
         const messageData = insertMessageSchema.parse({
           sessionId,
           type,
@@ -363,18 +364,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
           status: 'pending',
           scheduledAt: scheduledAt ? new Date(scheduledAt) : null
         });
-        
+
         const message = await storage.createMessage(messageData);
         messages.push(message);
       }
-      
+
       // Send immediately if not scheduled
       if (!scheduledAt) {
         for (const message of messages) {
           messageService.queueMessage(message);
         }
       }
-      
+
       res.json({ messages, queued: messages.length });
     } catch (error) {
       console.error('Send message error:', error);
@@ -385,19 +386,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/messages/quick-send", async (req, res) => {
     try {
       const { phone, content, sessionId } = req.body;
-      
+
       // Parse phone numbers (comma-separated)
       const phones = phone.split(',').map((p: string) => p.trim()).filter((p: string) => p);
-      
+
       if (phones.length === 0) {
         return res.status(400).json({ error: "No valid phone numbers provided" });
       }
-      
+
       const session = await storage.getSession(sessionId);
       if (!session) {
         return res.status(404).json({ error: "Session not found" });
       }
-      
+
       // Create and queue messages
       const messages = [];
       for (const phoneNumber of phones) {
@@ -408,12 +409,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           phone: phoneNumber,
           status: 'pending'
         });
-        
+
         const message = await storage.createMessage(messageData);
         messages.push(message);
         messageService.queueMessage(message);
       }
-      
+
       res.json({ success: true, queued: messages.length });
     } catch (error) {
       console.error('Quick send error:', error);
@@ -434,12 +435,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/messages/schedule", async (req, res) => {
     try {
       const { sessionId, phone, content, scheduledAt, type = 'text' } = req.body;
-      
+
       const session = await storage.getSession(sessionId);
       if (!session) {
         return res.status(404).json({ error: "Session not found" });
       }
-      
+
       const messageData = insertMessageSchema.parse({
         sessionId,
         type,
@@ -448,7 +449,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: 'pending',
         scheduledAt: new Date(scheduledAt)
       });
-      
+
       const message = await storage.createMessage(messageData);
       res.json(message);
     } catch (error) {
@@ -473,10 +474,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!req.file) {
         return res.status(400).json({ error: "CSV file is required" });
       }
-      
+
       const userId = 1; // TODO: Get from session/auth
       const contacts: any[] = [];
-      
+
       // Parse CSV
       await new Promise((resolve, reject) => {
         fs.createReadStream(req.file.path)
@@ -495,15 +496,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .on('end', resolve)
           .on('error', reject);
       });
-      
+
       // Save contacts to database
       if (contacts.length > 0) {
         await storage.createContacts(contacts);
       }
-      
+
       // Clean up uploaded file
       fs.unlinkSync(req.file.path);
-      
+
       res.json({ imported: contacts.length });
     } catch (error) {
       console.error('CSV upload error:', error);
@@ -549,7 +550,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         phoneNumbers,
         mediaUrl: req.file ? `/uploads/${req.file.filename}` : undefined
       });
-      
+
       const campaign = await storage.createCampaign(data);
       res.json(campaign);
     } catch (error) {
@@ -562,7 +563,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const updates = req.body;
-      
+
       const campaign = await storage.updateCampaign(id, updates);
       res.json(campaign);
     } catch (error) {
@@ -574,11 +575,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const campaign = await storage.getCampaign(id);
-      
+
       if (!campaign) {
         return res.status(404).json({ error: "Campaign not found" });
       }
-      
+
       await campaignService.startCampaign(campaign);
       res.json({ success: true });
     } catch (error) {
@@ -612,10 +613,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!req.file) {
         return res.status(400).json({ error: "CSV file is required" });
       }
-      
+
       const { campaignId } = req.body;
       const birthdays = [];
-      
+
       // Parse CSV
       await new Promise((resolve, reject) => {
         fs.createReadStream(req.file!.path)
@@ -626,7 +627,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               // Convert to MM-DD format
               const date = new Date(birthDate);
               const formattedDate = `${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
-              
+
               birthdays.push({
                 campaignId: campaignId ? parseInt(campaignId) : null,
                 phone: row.phone || row.telefone,
@@ -640,15 +641,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .on('end', resolve)
           .on('error', reject);
       });
-      
+
       // Save birthdays to database
       for (const birthday of birthdays) {
         await storage.createBirthday(birthday);
       }
-      
+
       // Clean up uploaded file
       fs.unlinkSync(req.file.path);
-      
+
       res.json({ imported: birthdays.length });
     } catch (error) {
       console.error('Birthday CSV upload error:', error);
@@ -670,15 +671,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/groups", async (req, res) => {
     try {
       const { sessionId, name, description, members } = req.body;
-      
+
       const session = await storage.getSession(sessionId);
       if (!session) {
         return res.status(404).json({ error: "Session not found" });
       }
-      
+
       // Create group via WhatsApp
       const groupId = await sessionManager.createGroup(session.sessionId, name, members);
-      
+
       if (groupId) {
         const group = await storage.createGroup({
           sessionId,
@@ -687,7 +688,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           description,
           memberCount: members.length
         });
-        
+
         res.json(group);
       } else {
         res.status(500).json({ error: "Failed to create WhatsApp group" });
@@ -726,7 +727,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         level: req.query.level as string,
         limit: req.query.limit ? parseInt(req.query.limit as string) : 100
       };
-      
+
       const logs = await storage.getLogs(filters);
       res.json(logs);
     } catch (error) {
@@ -748,13 +749,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/groups/sync", async (req, res) => {
     try {
       const { sessionId } = req.body;
-      
+
       if (!sessionId) {
         return res.status(400).json({ error: "Session ID is required" });
       }
-      
+
       const session = await storage.getSession(sessionId);
-      
+
       if (!session) {
         return res.status(404).json({ error: "Session not found" });
       }
@@ -767,15 +768,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Buscar grupos do WhatsApp
       const whatsappGroups = await whatsappService.getGroupsFromWhatsApp(session.sessionId);
-      
+
       // Buscar grupos existentes no banco
       const existingGroups = await storage.getGroups(sessionId);
       const existingGroupIds = new Set(existingGroups.map(g => g.groupId));
-      
+
       // Sincronizar com o banco de dados
       const syncedGroups = [];
       const updatedGroups = [];
-      
+
       for (const groupData of whatsappGroups) {
         try {
           if (existingGroupIds.has(groupData.whatsappId)) {
@@ -800,7 +801,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               memberCount: groupData.memberCount || 0,
               isActive: true
             };
-            
+
             const group = await storage.createGroup(groupPayload);
             syncedGroups.push(group);
           }
@@ -812,7 +813,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Marcar grupos que não existem mais no WhatsApp como inativos
       const whatsappGroupIds = new Set(whatsappGroups.map(g => g.whatsappId));
       const inactiveGroups = [];
-      
+
       for (const existingGroup of existingGroups) {
         if (!whatsappGroupIds.has(existingGroup.groupId) && existingGroup.isActive) {
           const updatedGroup = await storage.updateGroup(existingGroup.id, {
@@ -839,10 +840,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/groups", async (req, res) => {
     try {
       const { sessionId, name, description, members } = req.body;
-      
+
       // Create group via WhatsApp
       const groupId = await sessionManager.createGroup(sessionId, name, members || []);
-      
+
       if (groupId) {
         // Save to database
         const group = await storage.createGroup({
