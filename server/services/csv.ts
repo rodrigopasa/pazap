@@ -79,20 +79,17 @@ class CSVService {
   private cleanPhoneNumber(phone: string): string | null {
     if (!phone) return null;
 
-    // Remove all non-digit characters
-    const cleaned = phone.replace(/\D/g, '');
-
-    // Validate length (should be between 8 and 15 digits)
-    if (cleaned.length < 8 || cleaned.length > 15) {
+    const { formatBrazilianWhatsAppNumber } = require('../phoneFormatter');
+    
+    try {
+      // Usar o formatador brasileiro para números do WhatsApp
+      const formatted = formatBrazilianWhatsAppNumber(phone);
+      // Remover o @s.whatsapp.net para armazenar apenas o número
+      return formatted.replace('@s.whatsapp.net', '');
+    } catch (error) {
+      console.warn(`Erro ao formatar número: ${phone}`, error);
       return null;
     }
-
-    // Add Brazil country code if not present and seems to be a Brazilian number
-    if (cleaned.length <= 11 && !cleaned.startsWith('55')) {
-      return '55' + cleaned;
-    }
-
-    return cleaned;
   }
 
   private parseBirthDate(dateStr: string): Date | undefined {

@@ -283,11 +283,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "A data e hora devem ser no futuro" });
       }
 
+      // Aplicar formatação brasileira para números de telefone
+      const { formatBrazilianWhatsAppNumber } = require('./phoneFormatter');
+      let formattedPhone = recipientType === "phone" ? phone : `group:${groupId}`;
+      
+      if (recipientType === "phone") {
+        const whatsappNumber = formatBrazilianWhatsAppNumber(phone);
+        // Remover @s.whatsapp.net para armazenar apenas o número limpo
+        formattedPhone = whatsappNumber.replace('@s.whatsapp.net', '');
+      }
+
       const message = await storage.createMessage({
         sessionId: parseInt(sessionId),
         type: 'text',
         content,
-        phone: recipientType === "phone" ? phone : `group:${groupId}`,
+        phone: formattedPhone,
         status: 'scheduled',
         scheduledAt
       });

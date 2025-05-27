@@ -283,16 +283,8 @@ class WhatsAppService {
   }
 
   private formatPhoneNumber(phone: string): string {
-    // Remove any non-digit characters
-    const cleaned = phone.replace(/\D/g, '');
-    
-    // Add country code if not present (assuming Brazil +55 as default)
-    let formatted = cleaned;
-    if (!formatted.startsWith('55') && formatted.length <= 11) {
-      formatted = '55' + formatted;
-    }
-    
-    return formatted + '@s.whatsapp.net';
+    const { formatBrazilianWhatsAppNumber } = require('../phoneFormatter');
+    return formatBrazilianWhatsAppNumber(phone);
   }
 
   private getMediaTypeFromUrl(url: string): MediaType {
