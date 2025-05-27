@@ -148,6 +148,21 @@ export const settings = pgTable("settings", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// Tabela para respostas automáticas
+export const autoReplies = pgTable("auto_replies", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  sessionId: integer("session_id").references(() => sessions.id, { onDelete: "cascade" }),
+  trigger: text("trigger").notNull(), // palavra-chave que dispara a resposta
+  response: text("response").notNull(), // resposta automática
+  isActive: boolean("is_active").default(true).notNull(),
+  matchType: text("match_type").default("contains").notNull(), // contains, exact, starts_with, ends_with
+  priority: integer("priority").default(1).notNull(), // ordem de prioridade
+  description: text("description"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   sessions: many(sessions),
@@ -155,6 +170,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   contacts: many(contacts),
   notifications: many(notifications),
   logs: many(logs),
+  autoReplies: many(autoReplies),
 }));
 
 export const sessionsRelations = relations(sessions, ({ one, many }) => ({
@@ -165,6 +181,7 @@ export const sessionsRelations = relations(sessions, ({ one, many }) => ({
   messages: many(messages),
   groups: many(groups),
   logs: many(logs),
+  autoReplies: many(autoReplies),
 }));
 
 export const messagesRelations = relations(messages, ({ one }) => ({
@@ -234,6 +251,17 @@ export const logsRelations = relations(logs, ({ one }) => ({
   }),
 }));
 
+export const autoRepliesRelations = relations(autoReplies, ({ one }) => ({
+  user: one(users, {
+    fields: [autoReplies.userId],
+    references: [users.id],
+  }),
+  session: one(sessions, {
+    fields: [autoReplies.sessionId],
+    references: [sessions.id],
+  }),
+}));
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -286,6 +314,12 @@ export const insertSettingSchema = createInsertSchema(settings).omit({
   updatedAt: true,
 });
 
+export const insertAutoReplySchema = createInsertSchema(autoReplies).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -315,3 +349,6 @@ export type Notification = typeof notifications.$inferSelect;
 export type InsertNotification = z.infer<typeof insertNotificationSchema>;
 
 export type Log = typeof logs.$inferSelect;
+
+export type AutoReply = typeof autoReplies.$inferSelect;
+export type InsertAutoReply = z.infer<typeof insertAutoReplySchema>;

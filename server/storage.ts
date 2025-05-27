@@ -75,6 +75,14 @@ export interface IStorage {
   setSetting(userId: number, key: string, value: string, description?: string): Promise<Setting>;
   getSettings(userId: number): Promise<Setting[]>;
 
+  // Auto Replies
+  getAutoReplies(userId: number, sessionId?: number): Promise<AutoReply[]>;
+  getAutoReply(id: number): Promise<AutoReply | undefined>;
+  createAutoReply(autoReply: InsertAutoReply): Promise<AutoReply>;
+  updateAutoReply(id: number, updates: Partial<AutoReply>): Promise<AutoReply>;
+  deleteAutoReply(id: number): Promise<void>;
+  getActiveAutoReplies(userId: number, sessionId?: number): Promise<AutoReply[]>;
+
   // Reports
   getReportsOverview(userId: number, range: string): Promise<any>;
   getReportsChart(userId: number, range: string, sessionId?: number): Promise<any[]>;
