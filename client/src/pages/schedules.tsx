@@ -61,6 +61,7 @@ export default function Schedules() {
   const [contactData, setContactData] = useState({ name: "", phone: "" });
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   
   // File upload refs
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -69,6 +70,21 @@ export default function Schedules() {
   const documentInputRef = useRef<HTMLInputElement>(null);
   
   const { toast } = useToast();
+
+  // Lista de emojis populares
+  const popularEmojis = [
+    '😀', '😃', '😄', '😁', '😊', '😍', '🥰', '😘',
+    '😎', '🤗', '🤔', '😴', '🤯', '😱', '😭', '😂',
+    '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍',
+    '👍', '👎', '👌', '✌️', '🤞', '👏', '🙌', '🤝',
+    '🔥', '⭐', '✨', '🎉', '🎊', '💯', '✅', '❌'
+  ];
+
+  // Função para adicionar emoji ao texto
+  const addEmoji = (emoji: string) => {
+    setContent(prev => prev + emoji);
+    setShowEmojiPicker(false);
+  };
 
   // Buscar sessões ativas
   const { data: sessions = [] } = useQuery<Session[]>({
@@ -415,9 +431,49 @@ export default function Schedules() {
                     </SelectContent>
                   </Select>
                   {selectedSession && groups.length === 0 && (
-                    <p className="text-xs text-amber-600">
-                      Nenhum grupo encontrado para esta sessão
-                    </p>
+                    <div className="space-y-2">
+                      <p className="text-xs text-amber-600">
+                        Nenhum grupo encontrado para esta sessão
+                      </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={async () => {
+                          try {
+                            const response = await fetch('/api/groups/sync', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ sessionId: parseInt(selectedSession) })
+                            });
+                            const result = await response.json();
+                            if (response.ok) {
+                              toast({
+                                title: "Sucesso!",
+                                description: result.message,
+                              });
+                              // Recarregar grupos
+                              window.location.reload();
+                            } else {
+                              toast({
+                                title: "Erro",
+                                description: result.error,
+                                variant: "destructive",
+                              });
+                            }
+                          } catch (error) {
+                            toast({
+                              title: "Erro",
+                              description: "Erro ao sincronizar grupos",
+                              variant: "destructive",
+                            });
+                          }
+                        }}
+                        className="w-full"
+                      >
+                        🔄 Sincronizar Grupos do WhatsApp
+                      </Button>
+                    </div>
                   )}
                 </div>
               )}
@@ -495,14 +551,35 @@ export default function Schedules() {
                         <Hash className="h-4 w-4" />
                       </Button>
                       <div className="border-l border-gray-300 h-6 mx-2"></div>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="h-8"
-                      >
-                        <Smile className="h-4 w-4" />
-                      </Button>
+                      <div className="relative">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                          className="h-8"
+                        >
+                          <Smile className="h-4 w-4" />
+                        </Button>
+                        
+                        {showEmojiPicker && (
+                          <div className="absolute top-10 left-0 z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3 w-64">
+                            <div className="text-xs text-gray-600 dark:text-gray-400 mb-2 font-medium">Emojis Populares</div>
+                            <div className="grid grid-cols-8 gap-1 max-h-32 overflow-y-auto">
+                              {popularEmojis.map((emoji, index) => (
+                                <button
+                                  key={index}
+                                  type="button"
+                                  onClick={() => addEmoji(emoji)}
+                                  className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-lg transition-colors"
+                                >
+                                  {emoji}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     <Textarea
