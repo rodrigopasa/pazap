@@ -28,13 +28,13 @@
   --chart-3: 142 76% 36%; /* Green */
   --chart-4: 262.1 83.3% 57.8%; /* Purple */
   --chart-5: 346.8 77.2% 49.8%; /* Pink */
-  --sidebar-background: 222 84% 4.9%; /* Dark blue */
-  --sidebar-foreground: 210 40% 98%;
+  --sidebar-background: 210 20% 98%; /* Light background */
+  --sidebar-foreground: 222 84% 4.9%; /* Dark text */
   --sidebar-primary: 24 100% 50%;
   --sidebar-primary-foreground: 0 0% 98%;
-  --sidebar-accent: 217.2 32.6% 17.5%; /* Darker blue */
-  --sidebar-accent-foreground: 210 40% 98%;
-  --sidebar-border: 217.2 32.6% 17.5%;
+  --sidebar-accent: 24 100% 95%; /* Light orange */
+  --sidebar-accent-foreground: 222 84% 4.9%;
+  --sidebar-border: 214.3 31.8% 91.4%;
   --sidebar-ring: 24 100% 50%;
 }
 

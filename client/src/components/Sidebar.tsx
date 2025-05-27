@@ -67,41 +67,41 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
       
       {/* Sidebar */}
       <div className={cn(
-        "fixed inset-y-0 left-0 z-30 w-64 bg-sidebar-background border-r border-sidebar-border transform transition-transform duration-300 ease-in-out lg:translate-x-0",
+        "fixed inset-y-0 left-0 z-30 w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out lg:translate-x-0",
         open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
       )}>
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="flex items-center h-16 px-4 border-b border-sidebar-border">
+          <div className="flex items-center h-16 px-4 border-b border-gray-200">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 pazap-gradient rounded-xl flex items-center justify-center shadow-lg pulse-orange">
+              <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-blue-500 rounded-xl flex items-center justify-center shadow-lg">
                 <MessageSquare className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-sidebar-foreground">PaZap</h1>
-                <p className="text-xs text-sidebar-foreground/70">Sistema Avançado</p>
+                <h1 className="text-xl font-bold text-gray-900">PaZap</h1>
+                <p className="text-xs text-gray-600">Sistema Avançado</p>
               </div>
             </div>
           </div>
 
           {/* Session Status */}
-          <div className="p-4 border-b border-sidebar-border">
-            <div className="glass-effect rounded-xl p-4 border border-orange-200/30">
+          <div className="p-4 border-b border-gray-200">
+            <div className="bg-gradient-to-r from-orange-50 to-blue-50 border border-orange-200 rounded-xl p-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-lg font-bold text-orange-600">{activeSessions || 0}</p>
-                  <p className="text-xs text-sidebar-foreground/70">Sessões Ativas</p>
+                  <p className="text-xs text-gray-600">Sessões Ativas</p>
                 </div>
-                <div className="w-3 h-3 bg-emerald-400 rounded-full pulse-orange"></div>
+                <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></div>
               </div>
-              <div className="mt-2 text-xs text-sidebar-foreground/60">
+              <div className="mt-2 text-xs text-gray-500">
                 {totalSessions || 0} total configuradas
               </div>
             </div>
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-3 py-4 space-y-2 overflow-y-auto">
+          <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
             {navigation.map((item) => {
               const isActive = location === item.href;
               return (
@@ -109,20 +109,20 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                   key={item.name} 
                   href={item.href}
                   className={cn(
-                    "group flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 hover:scale-105",
+                    "group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
                     isActive
-                      ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-lg pazap-gradient"
-                      : "text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      ? "bg-gradient-to-r from-orange-500 to-blue-500 text-white shadow-md"
+                      : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                   )}
                   onClick={onClose}
                 >
                   <item.icon
                     className={cn(
-                      "mr-3 h-5 w-5 flex-shrink-0 transition-colors",
-                      isActive ? "text-white" : "text-sidebar-foreground/60"
+                      "mr-3 h-4 w-4 flex-shrink-0",
+                      isActive ? "text-white" : "text-gray-500"
                     )}
                   />
-                  <span className={isActive ? "text-white font-semibold" : ""}>{item.name}</span>
+                  {item.name}
                   {item.name === "Mensagens" && (stats as any)?.messages?.pending > 0 && (
                     <Badge variant="secondary" className="ml-auto bg-orange-500 text-white">
                       {(stats as any).messages.pending}
@@ -137,17 +137,17 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           </nav>
 
           {/* User profile */}
-          <div className="flex-shrink-0 border-t border-sidebar-border p-4">
+          <div className="flex-shrink-0 border-t border-gray-200 p-4">
             <div className="flex items-center">
-              <div className="w-10 h-10 pazap-gradient rounded-full flex items-center justify-center shadow-lg">
+              <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-blue-500 rounded-full flex items-center justify-center shadow-lg">
                 <Settings className="h-5 w-5 text-white" />
               </div>
               <div className="ml-3 flex-1">
-                <p className="text-sm font-medium text-sidebar-foreground">Admin PaZap</p>
+                <p className="text-sm font-medium text-gray-900">Admin PaZap</p>
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="h-auto p-0 text-xs text-sidebar-foreground/60 hover:text-orange-400 transition-colors"
+                  className="h-auto p-0 text-xs text-gray-500 hover:text-orange-500 transition-colors"
                 >
                   <LogOut className="h-3 w-3 mr-1" />
                   Sair
