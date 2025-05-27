@@ -1,6 +1,7 @@
 import { Message } from '@shared/schema';
 import { storage } from '../storage';
 import { sessionManager } from '../whatsapp/sessionManager';
+import { rateLimiter } from './rateLimiter';
 
 interface MessageQueue {
   processing: boolean;
