@@ -103,15 +103,37 @@ export default function Messages() {
     setSessionId("");
     setMessageType("text");
     setScheduledAt("");
+    setMediaFile(null);
   };
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!phones.trim() || !content.trim() || !sessionId) {
+    // Validação específica por tipo de mensagem
+    if (!phones.trim() || !sessionId) {
       toast({
         title: "Campos obrigatórios",
         description: "Preencha todos os campos obrigatórios",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Para mensagens de texto, o conteúdo é obrigatório
+    if (messageType === "text" && !content.trim()) {
+      toast({
+        title: "Mensagem obrigatória",
+        description: "Digite o conteúdo da mensagem",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Para imagens e documentos, o arquivo é obrigatório
+    if ((messageType === "image" || messageType === "document") && !mediaFile) {
+      toast({
+        title: "Arquivo obrigatório",
+        description: `Selecione ${messageType === "image" ? "uma imagem" : "um documento"}`,
         variant: "destructive",
       });
       return;
@@ -122,9 +144,10 @@ export default function Messages() {
     sendMessageMutation.mutate({
       sessionId: parseInt(sessionId),
       phones: phoneList,
-      content,
+      content: content.trim(),
       type: messageType,
-      scheduledAt: scheduledAt || undefined
+      scheduledAt: scheduledAt || undefined,
+      mediaFile: mediaFile || undefined
     });
   };
 
@@ -300,15 +323,52 @@ export default function Messages() {
                     </p>
                   </div>
                   
+                  {/* Campo de upload para imagem/documento */}
+                  {(messageType === "image" || messageType === "document") && (
+                    <div>
+                      <Label htmlFor="mediaFile">
+                        {messageType === "image" ? "Imagem *" : "Documento *"}
+                      </Label>
+                      <Input
+                        id="mediaFile"
+                        type="file"
+                        accept={messageType === "image" ? "image/*" : ".pdf,.doc,.docx,.txt,.xls,.xlsx"}
+                        onChange={(e) => setMediaFile(e.target.files?.[0] || null)}
+                        className="cursor-pointer"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        {messageType === "image" 
+                          ? "Formatos aceitos: JPG, PNG, GIF (máx. 10MB)" 
+                          : "Formatos aceitos: PDF, DOC, DOCX, TXT, XLS, XLSX (máx. 10MB)"
+                        }
+                      </p>
+                    </div>
+                  )}
+
                   <div>
-                    <Label htmlFor="content">Mensagem *</Label>
+                    <Label htmlFor="content">
+                      {messageType === "text" ? "Mensagem *" : "Legenda (opcional)"}
+                    </Label>
                     <Textarea
                       id="content"
-                      placeholder="Digite sua mensagem aqui..."
+                      placeholder={
+                        messageType === "text" 
+                          ? "Digite sua mensagem aqui... 😊" 
+                          : "Digite uma legenda para o arquivo (opcional)..."
+                      }
                       value={content}
                       onChange={(e) => setContent(e.target.value)}
                       rows={4}
+                      className="resize-none"
                     />
+                    <div className="flex justify-between items-center mt-1">
+                      <p className="text-xs text-gray-500">
+                        Suporte completo a emojis: 😊 ❤️ 👍 🎉 📱 💻
+                      </p>
+                      <span className="text-xs text-gray-400">
+                        {content.length}/4000
+                      </span>
+                    </div>
                   </div>
                   
                   <div>
