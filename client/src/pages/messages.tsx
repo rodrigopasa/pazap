@@ -22,7 +22,11 @@ import {
   CheckCircle,
   XCircle,
   Clock,
-  Phone
+  Phone,
+  Smile,
+  Bold,
+  Italic,
+  Type
 } from "lucide-react";
 
 export default function Messages() {
@@ -38,6 +42,7 @@ export default function Messages() {
   const [messageType, setMessageType] = useState("text");
   const [scheduledAt, setScheduledAt] = useState("");
   const [mediaFile, setMediaFile] = useState<File | null>(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -104,7 +109,42 @@ export default function Messages() {
     setMessageType("text");
     setScheduledAt("");
     setMediaFile(null);
+    setShowEmojiPicker(false);
   };
+
+  // Função para adicionar emoji ao texto
+  const addEmoji = (emoji: string) => {
+    setContent(prev => prev + emoji);
+    setShowEmojiPicker(false);
+  };
+
+  // Função para adicionar formatação
+  const addFormatting = (type: 'bold' | 'italic' | 'monospace') => {
+    const selection = window.getSelection()?.toString() || 'texto';
+    let formatted = '';
+    
+    switch (type) {
+      case 'bold':
+        formatted = `*${selection}*`;
+        break;
+      case 'italic':
+        formatted = `_${selection}_`;
+        break;
+      case 'monospace':
+        formatted = `\`\`\`${selection}\`\`\``;
+        break;
+    }
+    
+    setContent(prev => prev + formatted);
+  };
+
+  // Lista de emojis populares
+  const popularEmojis = [
+    '😊', '😂', '❤️', '👍', '👏', '🎉', '🔥', '💯',
+    '😍', '🤔', '😢', '😡', '🙏', '💪', '✨', '🌟',
+    '📱', '💻', '🎯', '⚡', '🚀', '💡', '🎵', '📷',
+    '🏆', '🎁', '🌈', '☀️', '🌙', '⭐', '💝', '🎊'
+  ];
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
@@ -349,21 +389,112 @@ export default function Messages() {
                     <Label htmlFor="content">
                       {messageType === "text" ? "Mensagem *" : "Legenda (opcional)"}
                     </Label>
+                    
+                    {/* Barra de Ferramentas */}
+                    <div className="border border-gray-200 rounded-t-md p-2 bg-gray-50 flex items-center gap-2 flex-wrap">
+                      {/* Botões de Formatação */}
+                      <div className="flex items-center gap-1 border-r border-gray-300 pr-2">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => addFormatting('bold')}
+                          className="h-8 w-8 p-0"
+                          title="Negrito"
+                        >
+                          <Bold className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => addFormatting('italic')}
+                          className="h-8 w-8 p-0"
+                          title="Itálico"
+                        >
+                          <Italic className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => addFormatting('monospace')}
+                          className="h-8 w-8 p-0"
+                          title="Código"
+                        >
+                          <Type className="h-4 w-4" />
+                        </Button>
+                      </div>
+
+                      {/* Seletor de Emojis */}
+                      <div className="relative">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                          className="h-8 w-8 p-0"
+                          title="Adicionar emoji"
+                        >
+                          <Smile className="h-4 w-4" />
+                        </Button>
+                        
+                        {showEmojiPicker && (
+                          <div className="absolute top-10 left-0 z-50 bg-white border border-gray-200 rounded-lg shadow-lg p-3 w-64">
+                            <div className="text-xs text-gray-600 mb-2 font-medium">Emojis Populares</div>
+                            <div className="grid grid-cols-8 gap-1 max-h-32 overflow-y-auto">
+                              {popularEmojis.map((emoji, index) => (
+                                <button
+                                  key={index}
+                                  type="button"
+                                  onClick={() => addEmoji(emoji)}
+                                  className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded text-lg transition-colors"
+                                  title={`Adicionar ${emoji}`}
+                                >
+                                  {emoji}
+                                </button>
+                              ))}
+                            </div>
+                            <div className="mt-2 pt-2 border-t border-gray-100">
+                              <div className="text-xs text-gray-500">
+                                *Negrito* _Itálico_ ```Código```
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Emojis Rápidos */}
+                      <div className="flex items-center gap-1">
+                        {['😊', '❤️', '👍', '🎉', '🔥'].map((emoji) => (
+                          <button
+                            key={emoji}
+                            type="button"
+                            onClick={() => addEmoji(emoji)}
+                            className="w-8 h-8 flex items-center justify-center hover:bg-gray-200 rounded text-sm transition-colors"
+                            title={`Adicionar ${emoji}`}
+                          >
+                            {emoji}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
                     <Textarea
                       id="content"
                       placeholder={
                         messageType === "text" 
-                          ? "Digite sua mensagem aqui... 😊" 
+                          ? "Digite sua mensagem aqui..." 
                           : "Digite uma legenda para o arquivo (opcional)..."
                       }
                       value={content}
                       onChange={(e) => setContent(e.target.value)}
                       rows={4}
-                      className="resize-none"
+                      className="resize-none rounded-t-none border-t-0"
                     />
                     <div className="flex justify-between items-center mt-1">
                       <p className="text-xs text-gray-500">
-                        Suporte completo a emojis: 😊 ❤️ 👍 🎉 📱 💻
+                        Use a barra de ferramentas para emojis e formatação
                       </p>
                       <span className="text-xs text-gray-400">
                         {content.length}/4000
