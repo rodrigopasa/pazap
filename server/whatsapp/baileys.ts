@@ -1,10 +1,11 @@
-const baileys = require('@whiskeysockets/baileys');
-const makeWASocket = baileys.makeWASocket;
-const DisconnectReason = baileys.DisconnectReason;
-const useMultiFileAuthState = baileys.useMultiFileAuthState;
-const WAMessageKey = baileys.WAMessageKey;
-const proto = baileys.proto;
-const fetchLatestBaileysVersion = baileys.fetchLatestBaileysVersion;
+import { 
+  makeWASocket, 
+  DisconnectReason, 
+  useMultiFileAuthState,
+  WAMessageKey,
+  proto,
+  fetchLatestBaileysVersion
+} from '@whiskeysockets/baileys';
 import { Boom } from '@hapi/boom';
 import P from 'pino';
 import fs from 'fs';
