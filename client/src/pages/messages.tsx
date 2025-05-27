@@ -72,6 +72,15 @@ export default function Messages() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Lista de emojis populares
+  const popularEmojis = [
+    '😀', '😃', '😄', '😁', '😊', '😍', '🥰', '😘',
+    '😎', '🤗', '🤔', '😴', '🤯', '😱', '😭', '😂',
+    '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍',
+    '👍', '👎', '👌', '✌️', '🤞', '👏', '🙌', '🤝',
+    '🔥', '⭐', '✨', '🎉', '🎊', '💯', '✅', '❌'
+  ];
+
   const { data: messages, isLoading } = useQuery({
     queryKey: ["/api/messages", filterSession],
     queryFn: () => messageAPI.getAll(filterSession && filterSession !== "all" ? parseInt(filterSession) : undefined, 100),
@@ -435,13 +444,14 @@ export default function Messages() {
                     <Label htmlFor="phones">Números *</Label>
                     <Textarea
                       id="phones"
-                      placeholder="55119999999, 55118888888 (separados por vírgula)"
+                      placeholder="11999999999, 11888888888 (números brasileiros sem +55, separados por vírgula)"
                       value={phones}
                       onChange={(e) => setPhones(e.target.value)}
                       rows={3}
                     />
                     <p className="text-xs text-gray-500 mt-1">
-                      {contacts?.length > 0 && `${contacts.length} contatos disponíveis na base`}
+                      🇧🇷 Para números brasileiros, não precisa colocar +55 - o sistema adiciona automaticamente. 
+                      {contacts?.length > 0 && ` • ${contacts.length} contatos disponíveis na base`}
                     </p>
                   </div>
                   

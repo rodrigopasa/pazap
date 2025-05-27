@@ -39,6 +39,17 @@ export default function Campaigns() {
   const [type, setType] = useState("bulk");
   const [messageTemplate, setMessageTemplate] = useState("");
   const [scheduledAt, setScheduledAt] = useState("");
+  const [phoneNumbers, setPhoneNumbers] = useState("");
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+
+  // Lista de emojis populares
+  const popularEmojis = [
+    '😀', '😃', '😄', '😁', '😊', '😍', '🥰', '😘',
+    '😎', '🤗', '🤔', '😴', '🤯', '😱', '😭', '😂',
+    '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍',
+    '👍', '👎', '👌', '✌️', '🤞', '👏', '🙌', '🤝',
+    '🔥', '⭐', '✨', '🎉', '🎊', '💯', '✅', '❌'
+  ];
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -116,6 +127,40 @@ export default function Campaigns() {
     setType("bulk");
     setMessageTemplate("");
     setScheduledAt("");
+    setPhoneNumbers("");
+  };
+
+  // Funções de formatação de texto
+  const addFormatting = (format: string) => {
+    const textarea = document.getElementById('messageTemplate') as HTMLTextAreaElement;
+    if (!textarea) return;
+    
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = messageTemplate.substring(start, end);
+    
+    let formattedText = "";
+    switch (format) {
+      case "bold":
+        formattedText = `*${selectedText}*`;
+        break;
+      case "italic":
+        formattedText = `_${selectedText}_`;
+        break;
+      case "strikethrough":
+        formattedText = `~${selectedText}~`;
+        break;
+      case "monospace":
+        formattedText = `\`\`\`${selectedText}\`\`\``;
+        break;
+    }
+    
+    const newContent = messageTemplate.substring(0, start) + formattedText + messageTemplate.substring(end);
+    setMessageTemplate(newContent);
+  };
+
+  const addEmoji = (emoji: string) => {
+    setMessageTemplate(prev => prev + emoji);
   };
 
   const handleCreateCampaign = (e: React.FormEvent) => {
