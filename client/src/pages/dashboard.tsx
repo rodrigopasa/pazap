@@ -295,46 +295,42 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {scheduledMessages.map((message) => (
-                    <div 
-                      key={message.id}
-                      className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
-                    >
-                      <div className="flex items-center space-x-4">
-                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                          {message.status === 'recurring' ? (
-                            <Cake className="h-5 w-5 text-blue-600" />
-                          ) : message.status === 'campaign' ? (
-                            <Megaphone className="h-5 w-5 text-blue-600" />
-                          ) : (
-                            <Clock className="h-5 w-5 text-blue-600" />
-                          )}
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">{message.title}</p>
-                          <p className="text-xs text-gray-500">
-                            {message.schedule} - {message.recipients} destinatários
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Badge 
-                          variant="outline"
-                          className={
-                            message.status === 'scheduled' ? 'border-blue-200 text-blue-800' :
-                            message.status === 'recurring' ? 'border-green-200 text-green-800' :
-                            'border-purple-200 text-purple-800'
-                          }
-                        >
-                          {message.status === 'scheduled' ? 'Agendada' :
-                           message.status === 'recurring' ? 'Recorrente' : 'Campanha'}
-                        </Badge>
-                        <Button variant="ghost" size="sm">
-                          <Settings className="h-4 w-4" />
-                        </Button>
-                      </div>
+                  {!scheduledMessages || scheduledMessages.length === 0 ? (
+                    <div className="text-center py-8">
+                      <Clock className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                      <p className="text-sm text-gray-500">Nenhum agendamento próximo</p>
+                      <p className="text-xs text-gray-400">Crie um agendamento na seção de mensagens</p>
                     </div>
-                  ))}
+                  ) : (
+                    scheduledMessages.map((message: any) => (
+                      <div 
+                        key={message.id}
+                        className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
+                      >
+                        <div className="flex items-center space-x-4">
+                          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <Clock className="h-5 w-5 text-blue-600" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">
+                              {message.content?.substring(0, 30)}...
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              Para: {message.phone} • {new Date(message.scheduledAt).toLocaleDateString('pt-BR')} às {new Date(message.scheduledAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Badge 
+                            variant="outline"
+                            className="border-blue-200 text-blue-800"
+                          >
+                            {message.status === 'scheduled' ? 'Agendada' : message.status}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </CardContent>
             </Card>
