@@ -481,18 +481,42 @@ export default function Messages() {
                       </div>
                     </div>
 
-                    <RichTextarea
-                      value={content}
-                      onChange={setContent}
-                      placeholder={
-                        messageType === "text" 
-                          ? "Digite sua mensagem aqui..." 
-                          : "Digite uma legenda para o arquivo (opcional)..."
-                      }
-                      maxLength={4000}
-                      rows={4}
-                      className="resize-none"
-                    />
+                    <div className="space-y-2">
+                      <Textarea
+                        id="content"
+                        placeholder={
+                          messageType === "text" 
+                            ? "Digite sua mensagem aqui... (Você pode incluir links como https://exemplo.com)" 
+                            : "Digite uma legenda para o arquivo (opcional)..."
+                        }
+                        value={content}
+                        onChange={(e) => setContent(e.target.value)}
+                        rows={4}
+                        className="resize-none"
+                      />
+                      <div className="flex justify-between items-center">
+                        <div className="text-xs text-gray-500 space-y-1">
+                          <p>✓ Links são automaticamente detectados (https://exemplo.com)</p>
+                          <p>✓ Use *negrito* e _itálico_ para formatação</p>
+                        </div>
+                        <span className="text-xs text-gray-400">
+                          {content.length}/4000
+                        </span>
+                      </div>
+                      {/* Preview de Links */}
+                      {content && content.match(/(https?:\/\/[^\s]+)/g) && (
+                        <div className="bg-blue-50 p-2 rounded border-l-4 border-blue-200">
+                          <p className="text-xs font-medium text-blue-800">Links detectados:</p>
+                          <div className="space-y-1 mt-1">
+                            {content.match(/(https?:\/\/[^\s]+)/g)?.map((link, index) => (
+                              <div key={index} className="text-xs text-blue-600 break-all">
+                                📎 {link}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                   
                   <div>

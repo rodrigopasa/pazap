@@ -4,13 +4,15 @@ import { Button } from "@/components/ui/button"
 import { Bold, Italic, Link, Smile } from "lucide-react"
 import { Textarea } from "@/components/ui/textarea"
 
-interface RichTextareaProps extends Omit<React.ComponentProps<"textarea">, 'onChange'> {
+interface RichTextareaProps {
   value: string
   onChange: (value: string) => void
   placeholder?: string
   maxLength?: number
   showFormatting?: boolean
   showEmojis?: boolean
+  rows?: number
+  className?: string
 }
 
 const emojis = [
@@ -18,17 +20,16 @@ const emojis = [
   "💯", "🚀", "💡", "📱", "🎯", "👏", "🌟", "💝", "🌈", "🌺"
 ]
 
-const RichTextarea = React.forwardRef<HTMLTextAreaElement, RichTextareaProps>(
-  ({ 
-    className, 
-    value, 
-    onChange, 
-    placeholder = "Digite sua mensagem...", 
-    maxLength = 4000,
-    showFormatting = true,
-    showEmojis = true,
-    ...props 
-  }, ref) => {
+const RichTextarea: React.FC<RichTextareaProps> = ({ 
+  className, 
+  value, 
+  onChange, 
+  placeholder = "Digite sua mensagem...", 
+  maxLength = 4000,
+  showFormatting = true,
+  showEmojis = true,
+  rows = 4
+}) => {
     const textareaRef = React.useRef<HTMLTextAreaElement>(null)
 
     const insertText = (text: string) => {
@@ -166,11 +167,7 @@ const RichTextarea = React.forwardRef<HTMLTextAreaElement, RichTextareaProps>(
         {/* Campo de Texto */}
         <div className="relative">
           <Textarea
-            ref={(node) => {
-              textareaRef.current = node
-              if (typeof ref === 'function') ref(node)
-              else if (ref) ref.current = node
-            }}
+            ref={textareaRef}
             className={cn(
               showFormatting || showEmojis ? "rounded-t-none border-t-0" : "",
               className
@@ -179,7 +176,7 @@ const RichTextarea = React.forwardRef<HTMLTextAreaElement, RichTextareaProps>(
             onChange={(e) => onChange(e.target.value)}
             placeholder={placeholder}
             maxLength={maxLength}
-            {...props}
+            rows={rows}
           />
           
           <div className="flex justify-between items-center mt-1">
@@ -211,9 +208,6 @@ const RichTextarea = React.forwardRef<HTMLTextAreaElement, RichTextareaProps>(
         )}
       </div>
     )
-  }
-)
-
-RichTextarea.displayName = "RichTextarea"
+}
 
 export { RichTextarea }
