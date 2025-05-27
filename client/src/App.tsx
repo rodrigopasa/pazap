@@ -11,6 +11,7 @@ import Messages from "@/pages/messages";
 import Campaigns from "@/pages/campaigns";
 import Groups from "@/pages/groups";
 import Reports from "@/pages/reports";
+import Schedules from "@/pages/schedules";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -22,6 +23,7 @@ function Router() {
         <Route path="/messages" component={Messages} />
         <Route path="/campaigns" component={Campaigns} />
         <Route path="/groups" component={Groups} />
+        <Route path="/schedules" component={Schedules} />
         <Route path="/reports" component={Reports} />
         <Route component={NotFound} />
       </Switch>
