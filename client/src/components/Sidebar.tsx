@@ -29,7 +29,6 @@ const navigation = [
   { name: "Agendamentos", href: "/schedules", icon: Clock },
   { name: "Campanhas", href: "/campaigns", icon: Megaphone },
   { name: "Grupos", href: "/groups", icon: Users },
-  { name: "Aniversários", href: "/campaigns?tab=birthdays", icon: Cake },
   { name: "Relatórios", href: "/reports", icon: BarChart3 },
 ];
 
