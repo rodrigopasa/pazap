@@ -58,6 +58,17 @@ export const campaignAPI = {
   getAll: () => fetch('/api/campaigns', { credentials: 'include' }).then(r => r.json()),
   
   create: async (data: any) => {
+    // Se for FormData (com arquivo), usar fetch direto
+    if (data instanceof FormData) {
+      const response = await fetch('/api/campaigns', {
+        method: 'POST',
+        body: data,
+        credentials: 'include'
+      });
+      return response.json();
+    }
+    
+    // Caso contrário, usar apiRequest normal
     const response = await apiRequest('POST', '/api/campaigns', data);
     return response.json();
   },

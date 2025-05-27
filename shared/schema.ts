@@ -55,6 +55,7 @@ export const campaigns = pgTable("campaigns", {
   status: text("status").notNull().default("draft"), // draft, active, completed, paused
   messageTemplate: text("message_template"),
   mediaUrl: text("media_url"),
+  phoneNumbers: text("phone_numbers").array(), // Array of phone numbers for bulk campaigns
   targetCount: integer("target_count").default(0),
   sentCount: integer("sent_count").default(0),
   successCount: integer("success_count").default(0),

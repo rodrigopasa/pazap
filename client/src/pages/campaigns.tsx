@@ -46,6 +46,8 @@ export default function Campaigns() {
   const [scheduledAt, setScheduledAt] = useState("");
   const [phoneNumbers, setPhoneNumbers] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [mediaFile, setMediaFile] = useState<File | null>(null);
+  const [mediaPreview, setMediaPreview] = useState<string | null>(null);
 
   // Lista de emojis populares
   const popularEmojis = [
@@ -133,6 +135,9 @@ export default function Campaigns() {
     setMessageTemplate("");
     setScheduledAt("");
     setPhoneNumbers("");
+    setMediaFile(null);
+    setMediaPreview(null);
+    setShowEmojiPicker(false);
   };
 
   // Funções de formatação de texto
@@ -166,6 +171,30 @@ export default function Campaigns() {
 
   const addEmoji = (emoji: string) => {
     setMessageTemplate(prev => prev + emoji);
+  };
+
+  // Função para lidar com upload de mídia
+  const handleMediaUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setMediaFile(file);
+    
+    // Criar preview para imagens
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setMediaPreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setMediaPreview(null);
+    }
+  };
+
+  const removeMedia = () => {
+    setMediaFile(null);
+    setMediaPreview(null);
   };
 
   const handleCreateCampaign = (e: React.FormEvent) => {
@@ -209,14 +238,26 @@ export default function Campaigns() {
       }
     }
 
-    createCampaignMutation.mutate({
-      name: name.trim(),
-      description: description.trim(),
-      type,
-      messageTemplate: messageTemplate.trim(),
-      scheduledAt: scheduledAt || undefined,
-      phoneNumbers: processedNumbers
-    });
+    // Criar FormData para suportar upload de arquivo
+    const formData = new FormData();
+    formData.append('name', name.trim());
+    formData.append('description', description.trim());
+    formData.append('type', type);
+    formData.append('messageTemplate', messageTemplate.trim());
+    
+    if (scheduledAt) {
+      formData.append('scheduledAt', scheduledAt);
+    }
+    
+    if (processedNumbers.length > 0) {
+      formData.append('phoneNumbers', JSON.stringify(processedNumbers));
+    }
+    
+    if (mediaFile) {
+      formData.append('media', mediaFile);
+    }
+
+    createCampaignMutation.mutate(formData);
   };
 
   const handleUploadBirthdays = (e: React.FormEvent) => {
@@ -489,6 +530,62 @@ export default function Campaigns() {
                       rows={4}
                       className="rounded-t-none border-t-0 focus:ring-0"
                     />
+                  </div>
+                  
+                  {/* Campo de upload de mídia */}
+                  <div>
+                    <Label htmlFor="mediaFile">Imagem ou Arquivo (Opcional)</Label>
+                    <div className="space-y-3">
+                      <Input
+                        id="mediaFile"
+                        type="file"
+                        accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt"
+                        onChange={handleMediaUpload}
+                        className="cursor-pointer"
+                      />
+                      <p className="text-xs text-gray-500">
+                        Formatos suportados: Imagens (JPG, PNG, GIF), Vídeos (MP4, AVI), Áudios (MP3, WAV), Documentos (PDF, DOC, TXT)
+                      </p>
+                      
+                      {/* Preview da mídia */}
+                      {mediaFile && (
+                        <div className="border border-gray-200 rounded-lg p-3 bg-gray-50">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-medium text-gray-700">Arquivo selecionado:</span>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={removeMedia}
+                              className="h-6 w-6 p-0"
+                            >
+                              ×
+                            </Button>
+                          </div>
+                          
+                          {mediaPreview ? (
+                            <div className="space-y-2">
+                              <img 
+                                src={mediaPreview} 
+                                alt="Preview" 
+                                className="max-w-full h-32 object-cover rounded border"
+                              />
+                              <p className="text-xs text-gray-600">{mediaFile.name} ({(mediaFile.size / 1024 / 1024).toFixed(2)} MB)</p>
+                            </div>
+                          ) : (
+                            <div className="flex items-center space-x-2">
+                              <div className="w-8 h-8 bg-blue-100 rounded flex items-center justify-center">
+                                📄
+                              </div>
+                              <div className="text-sm">
+                                <p className="font-medium text-gray-700">{mediaFile.name}</p>
+                                <p className="text-gray-500">{(mediaFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
                   
                   {/* Campo de números para campanhas em massa */}

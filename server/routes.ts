@@ -532,11 +532,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/campaigns", async (req, res) => {
+  app.post("/api/campaigns", upload.single('media'), async (req, res) => {
     try {
+      let phoneNumbers = [];
+      if (req.body.phoneNumbers) {
+        try {
+          phoneNumbers = JSON.parse(req.body.phoneNumbers);
+        } catch (e) {
+          phoneNumbers = [];
+        }
+      }
+
       const data = insertCampaignSchema.parse({
         ...req.body,
-        userId: 1 // TODO: Get from session/auth
+        userId: 1, // TODO: Get from session/auth
+        phoneNumbers,
+        mediaUrl: req.file ? `/uploads/${req.file.filename}` : undefined
       });
       
       const campaign = await storage.createCampaign(data);
