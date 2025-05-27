@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { RichTextarea } from "@/components/ui/rich-textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -480,26 +481,18 @@ export default function Messages() {
                       </div>
                     </div>
 
-                    <Textarea
-                      id="content"
+                    <RichTextarea
+                      value={content}
+                      onChange={setContent}
                       placeholder={
                         messageType === "text" 
                           ? "Digite sua mensagem aqui..." 
                           : "Digite uma legenda para o arquivo (opcional)..."
                       }
-                      value={content}
-                      onChange={(e) => setContent(e.target.value)}
+                      maxLength={4000}
                       rows={4}
-                      className="resize-none rounded-t-none border-t-0"
+                      className="resize-none"
                     />
-                    <div className="flex justify-between items-center mt-1">
-                      <p className="text-xs text-gray-500">
-                        Use a barra de ferramentas para emojis e formatação
-                      </p>
-                      <span className="text-xs text-gray-400">
-                        {content.length}/4000
-                      </span>
-                    </div>
                   </div>
                   
                   <div>
