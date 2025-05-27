@@ -8,8 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { MessageSquare, Shield } from "lucide-react";
-import { useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 
 const loginSchema = z.object({
@@ -22,6 +21,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 export default function LoginPage() {
   const [, setLocation] = useLocation();
   const [error, setError] = useState<string>("");
+  const queryClient = useQueryClient();
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -39,17 +39,23 @@ export default function LoginPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
+        credentials: 'include'
       });
       
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || "Erro ao fazer login");
+        throw new Error(error.error || "Erro ao fazer login");
       }
       
       return response.json();
     },
     onSuccess: () => {
-      setLocation("/dashboard");
+      // Invalida o cache da autenticação para forçar uma nova verificação
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+      // Pequeno delay para garantir que a invalidação aconteça
+      setTimeout(() => {
+        window.location.href = "/dashboard";
+      }, 100);
     },
     onError: (error: any) => {
       setError(error.message || "Erro ao fazer login");
