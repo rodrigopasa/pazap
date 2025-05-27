@@ -43,21 +43,43 @@ class ScheduleService {
   private async processScheduledMessages(): Promise<void> {
     try {
       const pendingMessages = await storage.getPendingScheduledMessages();
+      const now = new Date();
+      
+      console.log(`Checking ${pendingMessages.length} scheduled messages`);
       
       for (const message of pendingMessages) {
-        messageService.queueMessage(message);
-        
-        await storage.createLog({
-          level: 'info',
-          source: 'scheduler',
-          message: `Scheduled message ${message.id} queued for delivery`,
-          metadata: { messageId: message.id, phone: message.phone },
-          sessionId: message.sessionId
-        });
-      }
-
-      if (pendingMessages.length > 0) {
-        console.log(`Queued ${pendingMessages.length} scheduled messages`);
+        // Verificar se chegou a hora de enviar
+        if (message.scheduledAt && new Date(message.scheduledAt) <= now) {
+          console.log(`Sending scheduled message ${message.id} to ${message.phone}`);
+          
+          try {
+            // Enviar mensagem
+            messageService.queueMessage(message);
+            
+            // Atualizar status para enviado
+            await storage.updateMessage(message.id, {
+              status: 'sent',
+              sentAt: now
+            });
+            
+            await storage.createLog({
+              level: 'info',
+              source: 'scheduler',
+              message: `Scheduled message sent to ${message.phone}`,
+              metadata: { messageId: message.id, phone: message.phone },
+              sessionId: message.sessionId
+            });
+            
+            console.log(`Successfully sent scheduled message ${message.id}`);
+          } catch (error) {
+            console.error(`Error sending scheduled message ${message.id}:`, error);
+            
+            await storage.updateMessage(message.id, {
+              status: 'failed',
+              failureReason: error instanceof Error ? error.message : 'Unknown error'
+            });
+          }
+        }
       }
     } catch (error) {
       console.error('Error processing scheduled messages:', error);
