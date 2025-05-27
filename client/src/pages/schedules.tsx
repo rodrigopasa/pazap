@@ -177,23 +177,31 @@ export default function Schedules() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Agendamentos</h1>
-          <p className="text-muted-foreground">
-            Gerencie suas mensagens agendadas
-          </p>
+    <div className="space-y-8 p-6">
+      {/* Header Section with improved spacing and design */}
+      <div className="flex items-center justify-between bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 p-6 rounded-xl border border-blue-200 dark:border-blue-800">
+        <div className="space-y-2">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center">
+              <Calendar className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Agendamentos</h1>
+              <p className="text-blue-600 dark:text-blue-400 font-medium">
+                Gerencie suas mensagens agendadas para grupos e contatos
+              </p>
+            </div>
+          </div>
         </div>
         
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
+            <Button className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 h-12 px-6 text-base font-medium">
+              <Plus className="mr-2 h-5 w-5" />
               Nova Mensagem Agendada
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Agendar Mensagem</DialogTitle>
               <DialogDescription>
