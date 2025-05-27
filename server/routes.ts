@@ -7,11 +7,12 @@ import { messageService } from "./services/messageService";
 import { campaignService } from "./services/campaignService";
 import { scheduleService } from "./services/scheduleService";
 import { upload } from "./middleware/upload";
-import { insertSessionSchema, insertMessageSchema, insertCampaignSchema, insertBirthdaySchema } from "@shared/schema";
+import { insertSessionSchema, insertMessageSchema, insertCampaignSchema, insertBirthdaySchema, insertUserSchema } from "@shared/schema";
 import { z } from "zod";
 import csv from "csv-parser";
 import fs from "fs";
 import { notificationService } from './services/notificationService';
+import bcrypt from 'bcrypt';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
@@ -62,6 +63,94 @@ export async function registerRoutes(app: Express): Promise<Server> {
   if (sessionManager && sessionManager.setBroadcast) {
     sessionManager.setBroadcast(broadcast);
   }
+
+  // Ensure admin user exists
+  async function ensureAdminUser() {
+    try {
+      let adminUser = await storage.getUserByUsername("Hisoka");
+      if (!adminUser) {
+        const hashedPassword = await bcrypt.hash("Antonio1209#", 10);
+        adminUser = await storage.createUser({
+          username: "Hisoka",
+          password: hashedPassword,
+          role: "admin"
+        });
+        console.log("Admin user created:", adminUser.username);
+      }
+    } catch (error) {
+      console.error("Error ensuring admin user:", error);
+    }
+  }
+
+  // Initialize admin user
+  await ensureAdminUser();
+
+  // Authentication Routes
+  app.post("/api/auth/login", async (req, res) => {
+    try {
+      const { username, password } = req.body;
+
+      if (!username || !password) {
+        return res.status(400).json({ error: "Usuário e senha são obrigatórios" });
+      }
+
+      const user = await storage.getUserByUsername(username);
+      if (!user) {
+        return res.status(401).json({ error: "Usuário ou senha inválidos" });
+      }
+
+      const validPassword = await bcrypt.compare(password, user.password);
+      if (!validPassword) {
+        return res.status(401).json({ error: "Usuário ou senha inválidos" });
+      }
+
+      // Store user session (simplified for now)
+      req.session = req.session || {};
+      req.session.userId = user.id;
+      req.session.username = user.username;
+
+      res.json({
+        user: {
+          id: user.id,
+          username: user.username,
+          role: user.role
+        },
+        message: "Login realizado com sucesso"
+      });
+    } catch (error) {
+      console.error("Login error:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  app.post("/api/auth/logout", (req, res) => {
+    req.session = null;
+    res.json({ message: "Logout realizado com sucesso" });
+  });
+
+  app.get("/api/auth/me", async (req, res) => {
+    try {
+      if (!req.session?.userId) {
+        return res.status(401).json({ error: "Não autenticado" });
+      }
+
+      const user = await storage.getUser(req.session.userId);
+      if (!user) {
+        return res.status(401).json({ error: "Usuário não encontrado" });
+      }
+
+      res.json({
+        user: {
+          id: user.id,
+          username: user.username,
+          role: user.role
+        }
+      });
+    } catch (error) {
+      console.error("Auth check error:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
 
   // API Routes
 
