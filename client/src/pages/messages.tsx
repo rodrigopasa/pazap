@@ -49,7 +49,7 @@ export default function Messages() {
   const [phones, setPhones] = useState("");
   const [content, setContent] = useState("");
   const [sessionId, setSessionId] = useState("");
-  const [messageType, setMessageType] = useState<"text" | "media" | "document" | "location" | "contact">("text");
+  const [messageType, setMessageType] = useState("text");
   const [scheduledAt, setScheduledAt] = useState("");
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -145,7 +145,7 @@ export default function Messages() {
   };
 
   // Handle file uploads for advanced features
-  const handleFileUpload = (files: FileList | null, type: "image" | "video" | "audio" | "document") => {
+  const handleAdvancedFileUpload = (files: FileList | null, type: "image" | "video" | "audio" | "document") => {
     if (!files) return;
     
     if (type === "document") {
@@ -266,7 +266,7 @@ export default function Messages() {
     });
   };
 
-  const handleFileUpload = (e: React.FormEvent) => {
+  const handleCSVUpload = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!selectedFile) {
@@ -347,7 +347,7 @@ export default function Messages() {
                     Importe uma lista de contatos via arquivo CSV
                   </DialogDescription>
                 </DialogHeader>
-                <form onSubmit={handleFileUpload} className="space-y-4">
+                <form onSubmit={handleCSVUpload} className="space-y-4">
                   <div>
                     <Label htmlFor="csvFile">Arquivo CSV</Label>
                     <Input

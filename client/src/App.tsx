@@ -7,7 +7,7 @@ import { ThemeProvider } from "next-themes";
 import Layout from "@/components/Layout";
 import Dashboard from "@/pages/dashboard";
 import Sessions from "@/pages/sessions";
-import Messages from "@/pages/messages";
+import Messages from "@/pages/messages-new";
 import Campaigns from "@/pages/campaigns";
 import Groups from "@/pages/groups";
 import Reports from "@/pages/reports";
