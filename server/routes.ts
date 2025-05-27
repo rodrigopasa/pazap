@@ -13,6 +13,7 @@ import csv from "csv-parser";
 import fs from "fs";
 import { notificationService } from './services/notificationService';
 import bcrypt from 'bcrypt';
+import "./types/session";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
@@ -72,6 +73,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const hashedPassword = await bcrypt.hash("Antonio1209#", 10);
         adminUser = await storage.createUser({
           username: "Hisoka",
+          email: "admin@pazap.com",
           password: hashedPassword,
           role: "admin"
         });
@@ -124,8 +126,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/auth/logout", (req, res) => {
-    req.session = null;
-    res.json({ message: "Logout realizado com sucesso" });
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ error: "Erro ao fazer logout" });
+      }
+      res.json({ message: "Logout realizado com sucesso" });
+    });
   });
 
   app.get("/api/auth/me", async (req, res) => {

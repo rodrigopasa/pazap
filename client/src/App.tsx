@@ -1,6 +1,6 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
-import { QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "next-themes";
@@ -15,12 +15,50 @@ import Schedules from "@/pages/schedules";
 import Notifications from "@/pages/notifications";
 import RateLimit from "@/pages/rate-limit";
 import NotFound from "@/pages/not-found";
+import LoginPage from "@/pages/login";
+import { useEffect } from "react";
 
 function Router() {
+  const [location, setLocation] = useLocation();
+  
+  // Check authentication status
+  const { data: authData, isLoading: authLoading, error: authError } = useQuery({
+    queryKey: ["/api/auth/me"],
+    retry: false,
+  });
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!authLoading && (authError || !authData?.user)) {
+      if (location !== "/login") {
+        setLocation("/login");
+      }
+    }
+  }, [authLoading, authError, authData, location, setLocation]);
+
+  // Show login page
+  if (location === "/login") {
+    return <LoginPage />;
+  }
+
+  // Show loading while checking auth
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4" />
+          <p className="text-lg font-medium text-gray-700 dark:text-gray-300">Carregando PaZap...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show protected routes
   return (
     <Layout>
       <Switch>
         <Route path="/" component={Dashboard} />
+        <Route path="/dashboard" component={Dashboard} />
         <Route path="/sessions" component={Sessions} />
         <Route path="/messages" component={Messages} />
         <Route path="/campaigns" component={Campaigns} />
