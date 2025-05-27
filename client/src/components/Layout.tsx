@@ -1,10 +1,11 @@
 import { useState } from "react";
 import Sidebar from "./Sidebar";
 import { Button } from "@/components/ui/button";
-import { Bell, MessageCircle } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { Bell, MessageCircle, LogOut } from "lucide-react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import QuickSendModal from "./QuickSendModal";
+import { useLocation } from "wouter";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -41,7 +42,7 @@ export default function Layout({ children }: LayoutProps) {
           
           <div className="flex-1 px-4 flex justify-between items-center">
             <div className="flex-1 flex">
-              <h1 className="text-xl font-semibold text-gray-900">WhatsApp Manager</h1>
+              <h1 className="text-xl font-semibold text-gray-900">PaZap</h1>
             </div>
             
             <div className="ml-4 flex items-center space-x-4">
