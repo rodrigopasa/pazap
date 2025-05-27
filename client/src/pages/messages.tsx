@@ -37,6 +37,7 @@ export default function Messages() {
   const [sessionId, setSessionId] = useState("");
   const [messageType, setMessageType] = useState("text");
   const [scheduledAt, setScheduledAt] = useState("");
+  const [mediaFile, setMediaFile] = useState<File | null>(null);
 
   const { toast } = useToast();
   const queryClient = useQueryClient();

@@ -335,6 +335,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Scheduled Messages
+  app.get("/api/messages/scheduled", async (req, res) => {
+    try {
+      const messages = await storage.getPendingScheduledMessages();
+      res.json(messages);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get scheduled messages" });
+    }
+  });
+
+  app.post("/api/messages/schedule", async (req, res) => {
+    try {
+      const { sessionId, phone, content, scheduledAt, type = 'text' } = req.body;
+      
+      const session = await storage.getSession(sessionId);
+      if (!session) {
+        return res.status(404).json({ error: "Session not found" });
+      }
+      
+      const messageData = insertMessageSchema.parse({
+        sessionId,
+        type,
+        content,
+        phone,
+        status: 'pending',
+        scheduledAt: new Date(scheduledAt)
+      });
+      
+      const message = await storage.createMessage(messageData);
+      res.json(message);
+    } catch (error) {
+      console.error('Schedule message error:', error);
+      res.status(400).json({ error: "Failed to schedule message" });
+    }
+  });
+
+  app.delete("/api/messages/scheduled/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.updateMessage(id, { status: 'cancelled' });
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to cancel scheduled message" });
+    }
+  });
+
   // CSV Upload
   app.post("/api/contacts/upload", upload.single('csv'), async (req: any, res) => {
     try {
