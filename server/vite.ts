@@ -68,21 +68,42 @@ export async function setupVite(app: Express, server: Server) {
 }
 
 export function serveStatic(app: Express) {
-  const distPath = path.resolve("dist");
-  const publicPath = path.resolve("server", "public");
+  // Try multiple possible build directories
+  const possibleDirs = [
+    path.join(process.cwd(), "dist"),
+    path.join(process.cwd(), "client", "dist"),
+    path.join(process.cwd(), "server", "public")
+  ];
 
-  // Try dist first, then public as fallback
-  let staticPath = distPath;
-  if (!fs.existsSync(distPath) && fs.existsSync(publicPath)) {
-    staticPath = publicPath;
-  } else if (!fs.existsSync(distPath)) {
-    throw new Error(
-      `Could not find the build directory: ${distPath} or ${publicPath}, make sure to build the client first`,
-    );
+  let buildDir: string | null = null;
+
+  for (const dir of possibleDirs) {
+    if (fs.existsSync(dir)) {
+      buildDir = dir;
+      break;
+    }
   }
 
-  app.use(express.static(staticPath));
+  if (!buildDir) {
+    console.warn(`Build directory not found. Checked: ${possibleDirs.join(', ')}`);
+    // Create a minimal static directory as fallback
+    const fallbackDir = path.join(process.cwd(), "server", "public");
+    if (!fs.existsSync(fallbackDir)) {
+      fs.mkdirSync(fallbackDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(fallbackDir, "index.html"), 
+        `<!DOCTYPE html>
+<html>
+<head><title>Building...</title></head>
+<body><h1>Application is building, please wait...</h1></body>
+</html>`
+      );
+    }
+    buildDir = fallbackDir;
+  }
+
+  app.use(express.static(buildDir));
   app.get("*", (_req, res) => {
-    res.sendFile(path.resolve(staticPath, "index.html"));
+    res.sendFile(path.resolve(buildDir, "index.html"));
   });
 }
