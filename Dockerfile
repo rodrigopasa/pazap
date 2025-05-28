@@ -19,6 +19,9 @@ COPY . .
 # Build frontend
 RUN npx vite build
 
+# Ensure build directory exists and create symlink for production
+RUN mkdir -p server/public && cp -r dist/* server/public/
+
 # Expose port
 EXPOSE 5000
 
