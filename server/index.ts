@@ -62,6 +62,154 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Run database migrations first
+  try {
+    const { migrate } = await import('drizzle-orm/node-postgres/migrator');
+    const { db } = await import('./db');
+    
+    console.log('Running database migrations...');
+    await migrate(db, { migrationsFolder: './migrations' });
+    console.log('Database migrations completed successfully');
+  } catch (error) {
+    console.error('Database migration failed:', error);
+    
+    // If migrations fail, try to create tables using schema
+    try {
+      console.log('Attempting to sync database schema...');
+      const { drizzle } = await import('drizzle-orm/node-postgres');
+      const { pool } = await import('./db');
+      const schema = await import('../shared/schema');
+      
+      const db = drizzle({ client: pool, schema });
+      
+      // Create tables manually if needed
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS users (
+          id SERIAL PRIMARY KEY,
+          username VARCHAR(50) UNIQUE NOT NULL,
+          password VARCHAR(255) NOT NULL,
+          role VARCHAR(20) DEFAULT 'user',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        
+        CREATE TABLE IF NOT EXISTS sessions (
+          id SERIAL PRIMARY KEY,
+          user_id INTEGER REFERENCES users(id),
+          session_id VARCHAR(100) UNIQUE NOT NULL,
+          name VARCHAR(100) NOT NULL,
+          phone VARCHAR(20),
+          status VARCHAR(20) DEFAULT 'disconnected',
+          qr_code TEXT,
+          is_active BOOLEAN DEFAULT false,
+          last_seen TIMESTAMP,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        
+        CREATE TABLE IF NOT EXISTS "session" (
+          "sid" varchar NOT NULL COLLATE "default",
+          "sess" json NOT NULL,
+          "expire" timestamp(6) NOT NULL
+        ) WITH (OIDS=FALSE);
+        ALTER TABLE "session" ADD CONSTRAINT "session_pkey" PRIMARY KEY ("sid") NOT DEFERRABLE INITIALLY IMMEDIATE;
+        CREATE INDEX "IDX_session_expire" ON "session" ("expire");
+        
+        CREATE TABLE IF NOT EXISTS messages (
+          id SERIAL PRIMARY KEY,
+          session_id INTEGER REFERENCES sessions(id),
+          user_id INTEGER REFERENCES users(id),
+          phone VARCHAR(20) NOT NULL,
+          content TEXT NOT NULL,
+          media_url TEXT,
+          status VARCHAR(20) DEFAULT 'pending',
+          scheduled_at TIMESTAMP,
+          sent_at TIMESTAMP,
+          error TEXT,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        
+        CREATE TABLE IF NOT EXISTS campaigns (
+          id SERIAL PRIMARY KEY,
+          user_id INTEGER REFERENCES users(id),
+          name VARCHAR(100) NOT NULL,
+          message TEXT NOT NULL,
+          media_url TEXT,
+          status VARCHAR(20) DEFAULT 'draft',
+          scheduled_at TIMESTAMP,
+          total_recipients INTEGER DEFAULT 0,
+          sent_count INTEGER DEFAULT 0,
+          failed_count INTEGER DEFAULT 0,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        
+        CREATE TABLE IF NOT EXISTS contacts (
+          id SERIAL PRIMARY KEY,
+          user_id INTEGER REFERENCES users(id),
+          name VARCHAR(100),
+          phone VARCHAR(20) NOT NULL,
+          birthday DATE,
+          notes TEXT,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        
+        CREATE TABLE IF NOT EXISTS groups (
+          id SERIAL PRIMARY KEY,
+          user_id INTEGER REFERENCES users(id),
+          whatsapp_id VARCHAR(100) UNIQUE NOT NULL,
+          name VARCHAR(100) NOT NULL,
+          description TEXT,
+          member_count INTEGER DEFAULT 0,
+          is_admin BOOLEAN DEFAULT false,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        
+        CREATE TABLE IF NOT EXISTS logs (
+          id SERIAL PRIMARY KEY,
+          user_id INTEGER REFERENCES users(id),
+          session_id INTEGER REFERENCES sessions(id),
+          level VARCHAR(20) NOT NULL,
+          message TEXT NOT NULL,
+          data TEXT,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        
+        CREATE TABLE IF NOT EXISTS notifications (
+          id SERIAL PRIMARY KEY,
+          user_id INTEGER REFERENCES users(id),
+          title VARCHAR(200) NOT NULL,
+          message TEXT NOT NULL,
+          type VARCHAR(50) DEFAULT 'info',
+          is_read BOOLEAN DEFAULT false,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        
+        CREATE TABLE IF NOT EXISTS settings (
+          id SERIAL PRIMARY KEY,
+          user_id INTEGER REFERENCES users(id),
+          key VARCHAR(100) NOT NULL,
+          value TEXT,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE(user_id, key)
+        );
+        
+        CREATE TABLE IF NOT EXISTS birthdays (
+          id SERIAL PRIMARY KEY,
+          user_id INTEGER REFERENCES users(id),
+          contact_id INTEGER REFERENCES contacts(id),
+          name VARCHAR(100) NOT NULL,
+          birthday DATE NOT NULL,
+          message TEXT,
+          is_active BOOLEAN DEFAULT true,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+      
+      console.log('Database schema created successfully');
+    } catch (schemaError) {
+      console.error('Schema creation also failed:', schemaError);
+      throw schemaError;
+    }
+  }
+  
   // Criar usuário admin automaticamente
   await createAdminUser();
   
