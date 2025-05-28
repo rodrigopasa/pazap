@@ -66,17 +66,17 @@ app.use((req, res, next) => {
   try {
     console.log('Initializing database...');
     const { pool } = await import('./db');
-    
+
     // Check if tables exist and create them if needed
     const checkTables = await pool.query(`
       SELECT table_name 
       FROM information_schema.tables 
       WHERE table_schema = 'public'
     `);
-    
+
     const existingTables = checkTables.rows.map(row => row.table_name);
     console.log('Existing tables:', existingTables);
-    
+
     // Only create tables that don't exist
     if (!existingTables.includes('users')) {
       await pool.query(`
@@ -90,7 +90,7 @@ app.use((req, res, next) => {
       `);
       console.log('Created users table');
     }
-    
+
     if (!existingTables.includes('sessions')) {
       await pool.query(`
         CREATE TABLE sessions (
@@ -108,7 +108,7 @@ app.use((req, res, next) => {
       `);
       console.log('Created sessions table');
     }
-    
+
     if (!existingTables.includes('session')) {
       await pool.query(`
         CREATE TABLE "session" (
@@ -120,7 +120,7 @@ app.use((req, res, next) => {
       `);
       console.log('Created session table for express-session');
     }
-    
+
     if (!existingTables.includes('messages')) {
       await pool.query(`
         CREATE TABLE messages (
@@ -139,7 +139,7 @@ app.use((req, res, next) => {
       `);
       console.log('Created messages table');
     }
-    
+
     if (!existingTables.includes('campaigns')) {
       await pool.query(`
         CREATE TABLE campaigns (
@@ -170,7 +170,7 @@ app.use((req, res, next) => {
         FROM information_schema.columns 
         WHERE table_name = 'campaigns' AND column_name = 'phone_numbers'
       `);
-      
+
       if (columnsCheck.rows.length === 0) {
         await pool.query(`
           ALTER TABLE campaigns 
@@ -187,7 +187,7 @@ app.use((req, res, next) => {
         console.log('Added missing columns to campaigns table');
       }
     }
-    
+
     if (!existingTables.includes('contacts')) {
       await pool.query(`
         CREATE TABLE contacts (
@@ -202,7 +202,7 @@ app.use((req, res, next) => {
       `);
       console.log('Created contacts table');
     }
-    
+
     if (!existingTables.includes('groups')) {
       await pool.query(`
         CREATE TABLE groups (
@@ -218,7 +218,7 @@ app.use((req, res, next) => {
       `);
       console.log('Created groups table');
     }
-    
+
     if (!existingTables.includes('logs')) {
       await pool.query(`
         CREATE TABLE logs (
@@ -233,7 +233,7 @@ app.use((req, res, next) => {
       `);
       console.log('Created logs table');
     }
-    
+
     if (!existingTables.includes('notifications')) {
       await pool.query(`
         CREATE TABLE notifications (
@@ -248,7 +248,7 @@ app.use((req, res, next) => {
       `);
       console.log('Created notifications table');
     }
-    
+
     if (!existingTables.includes('settings')) {
       await pool.query(`
         CREATE TABLE settings (
@@ -262,7 +262,7 @@ app.use((req, res, next) => {
       `);
       console.log('Created settings table');
     }
-    
+
     if (!existingTables.includes('birthdays')) {
       await pool.query(`
         CREATE TABLE birthdays (
@@ -278,16 +278,16 @@ app.use((req, res, next) => {
       `);
       console.log('Created birthdays table');
     }
-    
+
     console.log('Database initialization completed successfully');
   } catch (error) {
     console.error('Database initialization failed:', error);
     // Don't throw error - continue with app startup
   }
-  
+
   // Criar usuário admin automaticamente
   await createAdminUser();
-  
+
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
