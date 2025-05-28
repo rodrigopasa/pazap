@@ -1,6 +1,10 @@
-import makeWASocket, { 
-  DisconnectReason, 
-  useMultiFileAuthState, 
+import * as Baileys from '@whiskeysockets/baileys';
+
+// Extract exports for compatibility
+const makeWASocket = Baileys.default || Baileys.makeWASocket || Baileys;
+const {
+  DisconnectReason,
+  useMultiFileAuthState,
   MessageRetryMap,
   makeInMemoryStore,
   proto,
@@ -8,7 +12,7 @@ import makeWASocket, {
   WAMessageKey,
   MediaType,
   jidDecode
-} from '@whiskeysockets/baileys';
+} = Baileys;
 import { Boom } from '@hapi/boom';
 import { storage } from '../storage';
 import fs from 'fs';
