@@ -62,37 +62,38 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Run database migrations first
+  // Initialize database tables
   try {
-    const { migrate } = await import('drizzle-orm/node-postgres/migrator');
-    const { db } = await import('./db');
+    console.log('Initializing database...');
+    const { pool } = await import('./db');
     
-    console.log('Running database migrations...');
-    await migrate(db, { migrationsFolder: './migrations' });
-    console.log('Database migrations completed successfully');
-  } catch (error) {
-    console.error('Database migration failed:', error);
+    // Check if tables exist and create them if needed
+    const checkTables = await pool.query(`
+      SELECT table_name 
+      FROM information_schema.tables 
+      WHERE table_schema = 'public'
+    `);
     
-    // If migrations fail, try to create tables using schema
-    try {
-      console.log('Attempting to sync database schema...');
-      const { drizzle } = await import('drizzle-orm/node-postgres');
-      const { pool } = await import('./db');
-      const schema = await import('../shared/schema');
-      
-      const db = drizzle({ client: pool, schema });
-      
-      // Create tables manually if needed
+    const existingTables = checkTables.rows.map(row => row.table_name);
+    console.log('Existing tables:', existingTables);
+    
+    // Only create tables that don't exist
+    if (!existingTables.includes('users')) {
       await pool.query(`
-        CREATE TABLE IF NOT EXISTS users (
+        CREATE TABLE users (
           id SERIAL PRIMARY KEY,
           username VARCHAR(50) UNIQUE NOT NULL,
           password VARCHAR(255) NOT NULL,
           role VARCHAR(20) DEFAULT 'user',
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
-        
-        CREATE TABLE IF NOT EXISTS sessions (
+      `);
+      console.log('Created users table');
+    }
+    
+    if (!existingTables.includes('sessions')) {
+      await pool.query(`
+        CREATE TABLE sessions (
           id SERIAL PRIMARY KEY,
           user_id INTEGER REFERENCES users(id),
           session_id VARCHAR(100) UNIQUE NOT NULL,
@@ -104,16 +105,25 @@ app.use((req, res, next) => {
           last_seen TIMESTAMP,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
-        
-        CREATE TABLE IF NOT EXISTS "session" (
-          "sid" varchar NOT NULL COLLATE "default",
+      `);
+      console.log('Created sessions table');
+    }
+    
+    if (!existingTables.includes('session')) {
+      await pool.query(`
+        CREATE TABLE "session" (
+          "sid" varchar NOT NULL PRIMARY KEY,
           "sess" json NOT NULL,
           "expire" timestamp(6) NOT NULL
-        ) WITH (OIDS=FALSE);
-        ALTER TABLE "session" ADD CONSTRAINT "session_pkey" PRIMARY KEY ("sid") NOT DEFERRABLE INITIALLY IMMEDIATE;
-        CREATE INDEX "IDX_session_expire" ON "session" ("expire");
-        
-        CREATE TABLE IF NOT EXISTS messages (
+        );
+        CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON "session" ("expire");
+      `);
+      console.log('Created session table for express-session');
+    }
+    
+    if (!existingTables.includes('messages')) {
+      await pool.query(`
+        CREATE TABLE messages (
           id SERIAL PRIMARY KEY,
           session_id INTEGER REFERENCES sessions(id),
           user_id INTEGER REFERENCES users(id),
@@ -126,22 +136,61 @@ app.use((req, res, next) => {
           error TEXT,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
-        
-        CREATE TABLE IF NOT EXISTS campaigns (
+      `);
+      console.log('Created messages table');
+    }
+    
+    if (!existingTables.includes('campaigns')) {
+      await pool.query(`
+        CREATE TABLE campaigns (
           id SERIAL PRIMARY KEY,
           user_id INTEGER REFERENCES users(id),
           name VARCHAR(100) NOT NULL,
-          message TEXT NOT NULL,
-          media_url TEXT,
+          description TEXT,
+          type VARCHAR(50) NOT NULL,
           status VARCHAR(20) DEFAULT 'draft',
-          scheduled_at TIMESTAMP,
-          total_recipients INTEGER DEFAULT 0,
+          message_template TEXT,
+          media_url TEXT,
+          phone_numbers TEXT[],
+          target_count INTEGER DEFAULT 0,
           sent_count INTEGER DEFAULT 0,
-          failed_count INTEGER DEFAULT 0,
+          success_count INTEGER DEFAULT 0,
+          failure_count INTEGER DEFAULT 0,
+          scheduled_at TIMESTAMP,
+          started_at TIMESTAMP,
+          completed_at TIMESTAMP,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
-        
-        CREATE TABLE IF NOT EXISTS contacts (
+      `);
+      console.log('Created campaigns table');
+    } else {
+      // Check if phone_numbers column exists, if not add it
+      const columnsCheck = await pool.query(`
+        SELECT column_name 
+        FROM information_schema.columns 
+        WHERE table_name = 'campaigns' AND column_name = 'phone_numbers'
+      `);
+      
+      if (columnsCheck.rows.length === 0) {
+        await pool.query(`
+          ALTER TABLE campaigns 
+          ADD COLUMN phone_numbers TEXT[],
+          ADD COLUMN description TEXT,
+          ADD COLUMN type VARCHAR(50) DEFAULT 'bulk',
+          ADD COLUMN message_template TEXT,
+          ADD COLUMN target_count INTEGER DEFAULT 0,
+          ADD COLUMN success_count INTEGER DEFAULT 0,
+          ADD COLUMN failure_count INTEGER DEFAULT 0,
+          ADD COLUMN started_at TIMESTAMP,
+          ADD COLUMN completed_at TIMESTAMP
+        `);
+        console.log('Added missing columns to campaigns table');
+      }
+    }
+    
+    if (!existingTables.includes('contacts')) {
+      await pool.query(`
+        CREATE TABLE contacts (
           id SERIAL PRIMARY KEY,
           user_id INTEGER REFERENCES users(id),
           name VARCHAR(100),
@@ -150,8 +199,13 @@ app.use((req, res, next) => {
           notes TEXT,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
-        
-        CREATE TABLE IF NOT EXISTS groups (
+      `);
+      console.log('Created contacts table');
+    }
+    
+    if (!existingTables.includes('groups')) {
+      await pool.query(`
+        CREATE TABLE groups (
           id SERIAL PRIMARY KEY,
           user_id INTEGER REFERENCES users(id),
           whatsapp_id VARCHAR(100) UNIQUE NOT NULL,
@@ -161,8 +215,13 @@ app.use((req, res, next) => {
           is_admin BOOLEAN DEFAULT false,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
-        
-        CREATE TABLE IF NOT EXISTS logs (
+      `);
+      console.log('Created groups table');
+    }
+    
+    if (!existingTables.includes('logs')) {
+      await pool.query(`
+        CREATE TABLE logs (
           id SERIAL PRIMARY KEY,
           user_id INTEGER REFERENCES users(id),
           session_id INTEGER REFERENCES sessions(id),
@@ -171,8 +230,13 @@ app.use((req, res, next) => {
           data TEXT,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
-        
-        CREATE TABLE IF NOT EXISTS notifications (
+      `);
+      console.log('Created logs table');
+    }
+    
+    if (!existingTables.includes('notifications')) {
+      await pool.query(`
+        CREATE TABLE notifications (
           id SERIAL PRIMARY KEY,
           user_id INTEGER REFERENCES users(id),
           title VARCHAR(200) NOT NULL,
@@ -181,8 +245,13 @@ app.use((req, res, next) => {
           is_read BOOLEAN DEFAULT false,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
-        
-        CREATE TABLE IF NOT EXISTS settings (
+      `);
+      console.log('Created notifications table');
+    }
+    
+    if (!existingTables.includes('settings')) {
+      await pool.query(`
+        CREATE TABLE settings (
           id SERIAL PRIMARY KEY,
           user_id INTEGER REFERENCES users(id),
           key VARCHAR(100) NOT NULL,
@@ -190,8 +259,13 @@ app.use((req, res, next) => {
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           UNIQUE(user_id, key)
         );
-        
-        CREATE TABLE IF NOT EXISTS birthdays (
+      `);
+      console.log('Created settings table');
+    }
+    
+    if (!existingTables.includes('birthdays')) {
+      await pool.query(`
+        CREATE TABLE birthdays (
           id SERIAL PRIMARY KEY,
           user_id INTEGER REFERENCES users(id),
           contact_id INTEGER REFERENCES contacts(id),
@@ -202,12 +276,13 @@ app.use((req, res, next) => {
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
       `);
-      
-      console.log('Database schema created successfully');
-    } catch (schemaError) {
-      console.error('Schema creation also failed:', schemaError);
-      throw schemaError;
+      console.log('Created birthdays table');
     }
+    
+    console.log('Database initialization completed successfully');
+  } catch (error) {
+    console.error('Database initialization failed:', error);
+    // Don't throw error - continue with app startup
   }
   
   // Criar usuário admin automaticamente
