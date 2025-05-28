@@ -1,29 +1,42 @@
-# Use Node.js 20 Alpine image
-FROM node:20-alpine
+# Etapa 1 - Build do front-end
+FROM node:20-alpine as build-frontend
 
-# Set working directory
 WORKDIR /app
 
-# Install dependencies for native modules and build tools
+# Instalar dependências para build
 RUN apk add --no-cache python3 make g++ cairo-dev jpeg-dev pango-dev giflib-dev
 
-# Copy package files
+# Copiar arquivos necessários para o front
+COPY package*.json vite.config.* tsconfig.* ./
+COPY client ./client
+
+WORKDIR /app/client
+
+RUN npm ci && npm run build
+
+# Etapa 2 - App final
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Instalar apenas runtime
+RUN apk add --no-cache python3 make g++ cairo-dev jpeg-dev pango-dev giflib-dev
+
+# Copiar dependências e instalar
 COPY package*.json ./
+RUN npm ci --omit=dev && npm install tsx pg
 
-# Install dependencies including tsx for runtime
-RUN npm ci --omit=dev && npm install tsx
+# Copiar código-fonte do backend
+COPY server ./server
 
-# Copy source code
-COPY . .
+# Copiar build do front-end para o local onde o backend espera os arquivos
+COPY --from=build-frontend /app/client/dist ./server/public
 
-# Build frontend
-RUN npx vite build
-
-# Expose port
+# Expor porta
 EXPOSE 5000
 
-# Set environment to production
+# Variáveis de ambiente
 ENV NODE_ENV=production
 
-# Start the application using tsx directly (no build step for backend)
+# Iniciar aplicação backend usando tsx
 CMD ["npx", "tsx", "server/index.ts"]
