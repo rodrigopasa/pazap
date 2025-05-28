@@ -4,20 +4,20 @@ FROM node:20-alpine
 # Set working directory
 WORKDIR /app
 
-# Install dependencies for native modules
+# Install dependencies for native modules and build tools
 RUN apk add --no-cache python3 make g++ cairo-dev jpeg-dev pango-dev giflib-dev
 
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --production=false
+# Install dependencies including tsx for runtime
+RUN npm ci --omit=dev && npm install tsx
 
 # Copy source code
 COPY . .
 
-# Build the application
-RUN npm run build
+# Build frontend
+RUN npx vite build
 
 # Expose port
 EXPOSE 5000
@@ -25,5 +25,5 @@ EXPOSE 5000
 # Set environment to production
 ENV NODE_ENV=production
 
-# Start the application
-CMD ["npm", "start"]
+# Start the application using tsx directly (no build step for backend)
+CMD ["npx", "tsx", "server/index.ts"]
