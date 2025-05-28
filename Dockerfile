@@ -1,6 +1,5 @@
-
-# Use Node.js 20 Alpine image
-FROM node:20-alpine
+# Use Node.js 20 Alpine image (explicitly specify latest LTS)
+FROM node:20.19-alpine
 
 # Set working directory
 WORKDIR /app
@@ -12,7 +11,8 @@ RUN apk add --no-cache python3 make g++ cairo-dev jpeg-dev pango-dev giflib-dev
 COPY package*.json ./
 
 # Install all dependencies (including devDependencies for build)
-RUN npm ci
+ENV NODE_OPTIONS="--loader=tsx/esm"
+RUN npm ci --verbose
 
 # Copy source code
 COPY . .
