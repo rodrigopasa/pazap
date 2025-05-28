@@ -1,3 +1,4 @@
+
 # Use Node.js 20 Alpine image (explicitly specify latest LTS)
 FROM node:20.19-alpine
 
@@ -11,7 +12,6 @@ RUN apk add --no-cache python3 make g++ cairo-dev jpeg-dev pango-dev giflib-dev
 COPY package*.json ./
 
 # Install all dependencies (including devDependencies for build)
-ENV NODE_OPTIONS="--loader=tsx/esm"
 RUN npm ci --verbose
 
 # Copy source code
@@ -21,7 +21,15 @@ COPY . .
 RUN npx vite build
 
 # Verify build output
-RUN ls -la dist/ && ls -la dist/index.html
+RUN ls -la dist/ && test -f dist/index.html
+
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001
+
+# Change ownership of app directory
+RUN chown -R nodejs:nodejs /app
+USER nodejs
 
 # Expose port
 EXPOSE 5000
