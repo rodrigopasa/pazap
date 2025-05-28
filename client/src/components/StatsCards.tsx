@@ -11,9 +11,9 @@ export default function StatsCards() {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {[1, 2, 3, 4].map((i) => (
-          <Card key={i}>
+          <Card key={i} className="modern-card modern-card-dark">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <Skeleton className="h-4 w-20" />
               <Skeleton className="h-4 w-4" />
@@ -30,81 +30,69 @@ export default function StatsCards() {
 
   const cards = [
     {
-      title: "Mensagens Hoje",
-      value: stats?.messages?.messagesToday || 0,
+      title: "Sessões Ativas",
+      value: (stats as any)?.sessions?.active || 0,
+      total: (stats as any)?.sessions?.total || 0,
       icon: MessageSquare,
-      iconColor: "text-blue-600",
-      bgColor: "bg-blue-100",
-      change: "+12%",
-      changeText: "vs ontem"
+      iconColor: "text-green-600",
+      bgColor: "bg-green-50",
+      gradient: "whatsapp-gradient-soft",
+      description: `${(stats as any)?.sessions?.total || 0} total configuradas`
     },
     {
-      title: "Taxa de Sucesso",
-      value: `${stats?.messages?.successRate || 0}%`,
+      title: "Mensagens Enviadas",
+      value: (stats as any)?.messages?.sent || 0,
       icon: CheckCircle,
-      iconColor: "text-green-600",
-      bgColor: "bg-green-100",
-      progress: stats?.messages?.successRate || 0
+      iconColor: "text-blue-600",
+      bgColor: "bg-blue-50",
+      gradient: "bg-gradient-to-br from-blue-50 to-blue-100",
+      description: `${(stats as any)?.messages?.total || 0} total processadas`
     },
     {
       title: "Campanhas Ativas",
-      value: stats?.campaigns?.active || 0,
+      value: (stats as any)?.campaigns?.active || 0,
       icon: Megaphone,
       iconColor: "text-purple-600",
-      bgColor: "bg-purple-100",
-      subtitle: "3 agendadas"
+      bgColor: "bg-purple-50",
+      gradient: "bg-gradient-to-br from-purple-50 to-purple-100",
+      description: "Campanhas em execução"
     },
     {
-      title: "Na Fila",
-      value: stats?.messages?.pending || 0,
+      title: "Pendentes",
+      value: (stats as any)?.messages?.pending || 0,
       icon: Clock,
       iconColor: "text-orange-600",
-      bgColor: "bg-orange-100",
-      subtitle: "~45 min restantes"
+      bgColor: "bg-orange-50",
+      gradient: "bg-gradient-to-br from-orange-50 to-orange-100",
+      description: `${(stats as any)?.messages?.failed || 0} falharam`
     }
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
       {cards.map((card, index) => (
-        <Card key={index} className="border border-gray-200 shadow-sm">
-          <CardContent className="p-5">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <div className={`w-8 h-8 ${card.bgColor} rounded-lg flex items-center justify-center`}>
-                  <card.icon className={`${card.iconColor} text-sm h-4 w-4`} />
+        <Card key={index} className="modern-card modern-card-dark group hover:scale-105 transition-smooth overflow-hidden">
+          <CardContent className="p-6 relative">
+            <div className={`absolute inset-0 ${card.gradient} opacity-30`} />
+            <div className="relative z-10">
+              <div className="flex items-center justify-between mb-4">
+                <div className={`w-12 h-12 ${card.bgColor} rounded-xl flex items-center justify-center group-hover:scale-110 transition-smooth`}>
+                  <card.icon className={`${card.iconColor} h-6 w-6`} />
+                </div>
+                <div className="text-right">
+                  <div className="text-3xl font-bold text-gray-900 dark:text-white">
+                    {typeof card.value === 'string' ? card.value : card.value.toLocaleString()}
+                  </div>
                 </div>
               </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">{card.title}</dt>
-                  <dd className="text-lg font-semibold text-gray-900">{card.value.toLocaleString()}</dd>
-                </dl>
+              <div>
+                <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-1">
+                  {card.title}
+                </h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {card.description}
+                </p>
               </div>
-            </div>
-            <div className="mt-3">
-              {card.change && (
-                <div className="flex items-center text-sm">
-                  <span className="text-green-600 font-medium flex items-center">
-                    <TrendingUp className="h-3 w-3 mr-1" />
-                    {card.change}
-                  </span>
-                  <span className="text-gray-500 ml-1">{card.changeText}</span>
-                </div>
-              )}
-              {card.progress !== undefined && (
-                <div className="w-full bg-gray-200 rounded-full h-1.5">
-                  <div 
-                    className="bg-green-500 h-1.5 rounded-full transition-all duration-300" 
-                    style={{ width: `${Math.min(card.progress, 100)}%` }}
-                  />
-                </div>
-              )}
-              {card.subtitle && (
-                <div className="flex items-center text-sm">
-                  <span className="text-blue-600 font-medium">{card.subtitle}</span>
-                </div>
-              )}
             </div>
           </CardContent>
         </Card>
