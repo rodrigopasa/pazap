@@ -1,11 +1,14 @@
-import { 
-  makeWASocket, 
-  DisconnectReason, 
+import * as Baileys from '@whiskeysockets/baileys';
+
+// Extract exports for compatibility
+const makeWASocket = Baileys.default || Baileys.makeWASocket || Baileys;
+const {
+  DisconnectReason,
   useMultiFileAuthState,
   WAMessageKey,
   proto,
   fetchLatestBaileysVersion
-} from '@whiskeysockets/baileys';
+} = Baileys;
 import { Boom } from '@hapi/boom';
 import P from 'pino';
 import fs from 'fs';
