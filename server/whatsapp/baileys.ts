@@ -1,14 +1,11 @@
-import * as Baileys from '@whiskeysockets/baileys';
-
-// Extract exports for compatibility
-const makeWASocket = Baileys.default || Baileys.makeWASocket || Baileys;
-const {
+import {
+  makeWASocket,
   DisconnectReason,
   useMultiFileAuthState,
   WAMessageKey,
   proto,
   fetchLatestBaileysVersion
-} = Baileys;
+} from '@whiskeysockets/baileys';
 import { Boom } from '@hapi/boom';
 import P from 'pino';
 import fs from 'fs';
@@ -62,11 +59,7 @@ export class BaileysClient {
         onMessage
       };
 
-      console.log('Creating WhatsApp socket, makeWASocket type:', typeof makeWASocket);
-      
-      if (typeof makeWASocket !== 'function') {
-        throw new Error('makeWASocket is not available');
-      }
+      console.log('Creating WhatsApp socket...');
 
       const sock = makeWASocket({
         version,
