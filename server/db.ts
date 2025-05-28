@@ -1,9 +1,6 @@
-import { Pool, neonConfig } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import ws from "ws";
+import { Pool } from 'pg';
+import { drizzle } from 'drizzle-orm/node-postgres';
 import * as schema from "@shared/schema";
-
-neonConfig.webSocketConstructor = ws;
 
 // Get database URL from environment variables
 const databaseUrl = process.env.DATABASE_URL || 
@@ -27,5 +24,12 @@ if (!databaseUrl || databaseUrl.includes('undefined')) {
 
 console.log("Connecting to database:", databaseUrl.replace(/:[^:]*@/, ':***@'));
 
-export const pool = new Pool({ connectionString: databaseUrl });
+// Configure PostgreSQL connection with optional SSL
+const connectionConfig = {
+  connectionString: databaseUrl,
+  // Only use SSL if explicitly required, otherwise disable it
+  ssl: databaseUrl.includes('sslmode=require') ? { rejectUnauthorized: false } : false
+};
+
+export const pool = new Pool(connectionConfig);
 export const db = drizzle({ client: pool, schema });
