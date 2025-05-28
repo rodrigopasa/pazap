@@ -132,7 +132,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                     <div className="ml-auto w-2 h-2 bg-orange-400 rounded-full pulse-orange"></div>
                   )}
                   {isActive && (
-                    <div className="absolute inset-0 bg-white/10 backdrop-blur-sm" />
+                    <div className="absolute inset-0 bg-white/10" />
                   )}
                 </Link>
               );
