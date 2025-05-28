@@ -5,37 +5,37 @@
 :root {
   --background: 210 20% 98%; /* #F7F9FC */
   --foreground: 222 84% 4.9%; /* #0F172A */
-  --muted: 210 40% 95%; /* #F1F5F9 */
+  --muted: 210 40% 96%; /* #F1F5F9 */
   --muted-foreground: 215.4 16.3% 46.9%; /* #64748B */
-  --popover: 210 20% 98%;
+  --popover: 0 0% 100%;
   --popover-foreground: 222 84% 4.9%;
   --card: 0 0% 100%;
   --card-foreground: 222 84% 4.9%;
   --border: 214.3 31.8% 91.4%; /* #E2E8F0 */
   --input: 214.3 31.8% 91.4%;
-  --primary: 24 100% 50%; /* PaZap Orange #FF6600 */
+  --primary: 142 86% 28%; /* WhatsApp Green #25D366 */
   --primary-foreground: 0 0% 98%;
   --secondary: 210 40% 95%;
   --secondary-foreground: 222.2 84% 4.9%;
-  --accent: 217.2 91.2% 59.8%; /* PaZap Blue #3B82F6 */
+  --accent: 217.2 91.2% 59.8%; /* Modern Blue #3B82F6 */
   --accent-foreground: 0 0% 98%;
   --destructive: 0 84.2% 60.2%;
   --destructive-foreground: 210 40% 98%;
-  --ring: 24 100% 50%;
-  --radius: 0.75rem;
-  --chart-1: 24 100% 50%; /* Orange */
+  --ring: 142 86% 28%;
+  --radius: 0.5rem;
+  --chart-1: 142 86% 28%; /* WhatsApp Green */
   --chart-2: 217.2 91.2% 59.8%; /* Blue */
-  --chart-3: 142 76% 36%; /* Green */
-  --chart-4: 262.1 83.3% 57.8%; /* Purple */
-  --chart-5: 346.8 77.2% 49.8%; /* Pink */
-  --sidebar-background: 210 20% 98%; /* Light background */
+  --chart-3: 262.1 83.3% 57.8%; /* Purple */
+  --chart-4: 346.8 77.2% 49.8%; /* Pink */
+  --chart-5: 24 100% 50%; /* Orange */
+  --sidebar-background: 0 0% 100%; /* Clean white */
   --sidebar-foreground: 222 84% 4.9%; /* Dark text */
-  --sidebar-primary: 24 100% 50%;
+  --sidebar-primary: 142 86% 28%;
   --sidebar-primary-foreground: 0 0% 98%;
-  --sidebar-accent: 24 100% 95%; /* Light orange */
+  --sidebar-accent: 142 86% 95%; /* Light green */
   --sidebar-accent-foreground: 222 84% 4.9%;
   --sidebar-border: 214.3 31.8% 91.4%;
-  --sidebar-ring: 24 100% 50%;
+  --sidebar-ring: 142 86% 28%;
 }
 
 .dark {
@@ -78,45 +78,64 @@
     font-family: 'Inter', sans-serif;
   }
 
-  /* PaZap brand colors */
-  .pazap-orange {
-    @apply bg-orange-500 text-white;
+  /* WhatsApp brand colors */
+  .whatsapp-green {
+    @apply bg-green-600 text-white;
   }
   
-  .pazap-orange-hover {
-    @apply hover:bg-orange-600;
+  .whatsapp-green-hover {
+    @apply hover:bg-green-700;
   }
   
-  .pazap-blue {
+  .whatsapp-blue {
     @apply bg-blue-500 text-white;
   }
   
-  .pazap-blue-hover {
+  .whatsapp-blue-hover {
     @apply hover:bg-blue-600;
   }
   
-  .pazap-gradient {
-    background: linear-gradient(135deg, #FF6600 0%, #3B82F6 100%);
+  .whatsapp-gradient {
+    background: linear-gradient(135deg, #25D366 0%, #3B82F6 100%);
   }
   
-  .pazap-gradient-soft {
-    background: linear-gradient(135deg, #FFF7ED 0%, #DBEAFE 100%);
+  .whatsapp-gradient-soft {
+    background: linear-gradient(135deg, #DCFCE7 0%, #DBEAFE 100%);
+  }
+
+  /* Modern card styles */
+  .modern-card {
+    @apply bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200;
+  }
+
+  .modern-card-dark {
+    @apply dark:bg-gray-800 dark:border-gray-700 dark:hover:shadow-lg;
   }
 
   /* Animation for real-time updates */
-  .pulse-orange {
-    animation: pulse-orange 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  .pulse-green {
+    animation: pulse-green 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
 
-  @keyframes pulse-orange {
+  @keyframes pulse-green {
     0%, 100% {
       opacity: 1;
-      box-shadow: 0 0 0 0 rgba(255, 102, 0, 0.7);
+      box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7);
     }
     50% {
       opacity: .8;
-      box-shadow: 0 0 0 10px rgba(255, 102, 0, 0);
+      box-shadow: 0 0 0 10px rgba(37, 211, 102, 0);
     }
+  }
+
+  /* Smooth transitions */
+  .transition-smooth {
+    @apply transition-all duration-300 ease-in-out;
+  }
+
+  /* Status badges */
+  .status-badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
   }
 
   /* Glass morphism effect */
