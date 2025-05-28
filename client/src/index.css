@@ -13,29 +13,29 @@
   --card-foreground: 222 84% 4.9%;
   --border: 214.3 31.8% 91.4%; /* #E2E8F0 */
   --input: 214.3 31.8% 91.4%;
-  --primary: 142 86% 28%; /* WhatsApp Green #25D366 */
+  --primary: 24 100% 50%; /* PaZap Orange #FF6600 */
   --primary-foreground: 0 0% 98%;
   --secondary: 210 40% 95%;
   --secondary-foreground: 222.2 84% 4.9%;
-  --accent: 217.2 91.2% 59.8%; /* Modern Blue #3B82F6 */
+  --accent: 217.2 91.2% 59.8%; /* PaZap Blue #3B82F6 */
   --accent-foreground: 0 0% 98%;
   --destructive: 0 84.2% 60.2%;
   --destructive-foreground: 210 40% 98%;
-  --ring: 142 86% 28%;
-  --radius: 0.5rem;
-  --chart-1: 142 86% 28%; /* WhatsApp Green */
+  --ring: 24 100% 50%;
+  --radius: 0.75rem;
+  --chart-1: 24 100% 50%; /* Orange */
   --chart-2: 217.2 91.2% 59.8%; /* Blue */
-  --chart-3: 262.1 83.3% 57.8%; /* Purple */
-  --chart-4: 346.8 77.2% 49.8%; /* Pink */
-  --chart-5: 24 100% 50%; /* Orange */
-  --sidebar-background: 0 0% 100%; /* Clean white */
+  --chart-3: 142 76% 36%; /* Green */
+  --chart-4: 262.1 83.3% 57.8%; /* Purple */
+  --chart-5: 346.8 77.2% 49.8%; /* Pink */
+  --sidebar-background: 210 20% 98%; /* Light background */
   --sidebar-foreground: 222 84% 4.9%; /* Dark text */
-  --sidebar-primary: 142 86% 28%;
+  --sidebar-primary: 24 100% 50%;
   --sidebar-primary-foreground: 0 0% 98%;
-  --sidebar-accent: 142 86% 95%; /* Light green */
+  --sidebar-accent: 24 100% 95%; /* Light orange */
   --sidebar-accent-foreground: 222 84% 4.9%;
   --sidebar-border: 214.3 31.8% 91.4%;
-  --sidebar-ring: 142 86% 28%;
+  --sidebar-ring: 24 100% 50%;
 }
 
 .dark {
@@ -78,29 +78,29 @@
     font-family: 'Inter', sans-serif;
   }
 
-  /* WhatsApp brand colors */
-  .whatsapp-green {
-    @apply bg-green-600 text-white;
+  /* PaZap brand colors */
+  .pazap-orange {
+    @apply bg-orange-500 text-white;
   }
   
-  .whatsapp-green-hover {
-    @apply hover:bg-green-700;
+  .pazap-orange-hover {
+    @apply hover:bg-orange-600;
   }
   
-  .whatsapp-blue {
+  .pazap-blue {
     @apply bg-blue-500 text-white;
   }
   
-  .whatsapp-blue-hover {
+  .pazap-blue-hover {
     @apply hover:bg-blue-600;
   }
   
-  .whatsapp-gradient {
-    background: linear-gradient(135deg, #25D366 0%, #3B82F6 100%);
+  .pazap-gradient {
+    background: linear-gradient(135deg, #FF6600 0%, #3B82F6 100%);
   }
   
-  .whatsapp-gradient-soft {
-    background: linear-gradient(135deg, #DCFCE7 0%, #DBEAFE 100%);
+  .pazap-gradient-soft {
+    background: linear-gradient(135deg, #FFF7ED 0%, #DBEAFE 100%);
   }
 
   /* Modern card styles */
@@ -113,18 +113,18 @@
   }
 
   /* Animation for real-time updates */
-  .pulse-green {
-    animation: pulse-green 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  .pulse-orange {
+    animation: pulse-orange 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
 
-  @keyframes pulse-green {
+  @keyframes pulse-orange {
     0%, 100% {
       opacity: 1;
-      box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7);
+      box-shadow: 0 0 0 0 rgba(255, 102, 0, 0.7);
     }
     50% {
       opacity: .8;
-      box-shadow: 0 0 0 10px rgba(37, 211, 102, 0);
+      box-shadow: 0 0 0 10px rgba(255, 102, 0, 0);
     }
   }
 

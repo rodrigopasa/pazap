@@ -74,25 +74,25 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           {/* Logo */}
           <div className="flex items-center h-16 px-4 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 whatsapp-gradient rounded-xl flex items-center justify-center shadow-lg hover:scale-105 transition-smooth">
+              <div className="w-12 h-12 pazap-gradient rounded-xl flex items-center justify-center shadow-lg hover:scale-105 transition-smooth">
                 <MessageSquare className="h-7 w-7 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900 dark:text-white">WhatsApp Pro</h1>
-                <p className="text-xs text-green-600 dark:text-green-400 font-medium">Sistema Avançado</p>
+                <h1 className="text-xl font-bold text-gray-900 dark:text-white">PaZap</h1>
+                <p className="text-xs text-orange-600 dark:text-orange-400 font-medium">Sistema Avançado</p>
               </div>
             </div>
           </div>
 
           {/* Session Status */}
           <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-            <div className="whatsapp-gradient-soft dark:bg-gray-800 border border-green-200 dark:border-green-600 rounded-xl p-4 transition-smooth">
+            <div className="pazap-gradient-soft dark:bg-gray-800 border border-orange-200 dark:border-orange-600 rounded-xl p-4 transition-smooth">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">{activeSessions || 0}</p>
+                  <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{activeSessions || 0}</p>
                   <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">Sessões Ativas</p>
                 </div>
-                <div className="w-4 h-4 bg-emerald-400 rounded-full pulse-green shadow-lg"></div>
+                <div className="w-4 h-4 bg-orange-400 rounded-full pulse-orange shadow-lg"></div>
               </div>
               <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                 {totalSessions || 0} total configuradas
@@ -111,7 +111,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                   className={cn(
                     "group flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-smooth relative overflow-hidden",
                     isActive
-                      ? "whatsapp-gradient text-white shadow-lg scale-105"
+                      ? "pazap-gradient text-white shadow-lg scale-105"
                       : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
                   )}
                   onClick={onClose}
@@ -119,17 +119,17 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                   <item.icon
                     className={cn(
                       "mr-3 h-5 w-5 flex-shrink-0 transition-smooth",
-                      isActive ? "text-white" : "text-gray-500 dark:text-gray-400 group-hover:text-green-600"
+                      isActive ? "text-white" : "text-gray-500 dark:text-gray-400 group-hover:text-orange-600"
                     )}
                   />
                   {item.name}
                   {item.name === "Mensagens" && (stats as any)?.messages?.pending > 0 && (
-                    <Badge variant="secondary" className="ml-auto bg-green-600 text-white text-xs">
+                    <Badge variant="secondary" className="ml-auto bg-orange-500 text-white text-xs">
                       {(stats as any).messages.pending}
                     </Badge>
                   )}
                   {item.name === "Respostas Automáticas" && (
-                    <div className="ml-auto w-2 h-2 bg-green-400 rounded-full pulse-green"></div>
+                    <div className="ml-auto w-2 h-2 bg-orange-400 rounded-full pulse-orange"></div>
                   )}
                   {isActive && (
                     <div className="absolute inset-0 bg-white/10 backdrop-blur-sm" />
@@ -142,15 +142,15 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           {/* User profile */}
           <div className="flex-shrink-0 border-t border-gray-200 dark:border-gray-700 p-4">
             <div className="flex items-center">
-              <div className="w-10 h-10 whatsapp-gradient rounded-full flex items-center justify-center shadow-lg hover:scale-105 transition-smooth">
+              <div className="w-10 h-10 pazap-gradient rounded-full flex items-center justify-center shadow-lg hover:scale-105 transition-smooth">
                 <Settings className="h-5 w-5 text-white" />
               </div>
               <div className="ml-3 flex-1">
-                <p className="text-sm font-medium text-gray-900 dark:text-white">Admin WhatsApp</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">Admin PaZap</p>
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="h-auto p-0 text-xs text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
+                  className="h-auto p-0 text-xs text-gray-500 dark:text-gray-400 hover:text-orange-600 dark:hover:text-orange-400 transition-colors"
                 >
                   <LogOut className="h-3 w-3 mr-1" />
                   Sair

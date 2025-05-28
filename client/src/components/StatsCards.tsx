@@ -36,7 +36,7 @@ export default function StatsCards() {
       icon: MessageSquare,
       iconColor: "text-green-600",
       bgColor: "bg-green-50",
-      gradient: "whatsapp-gradient-soft",
+      gradient: "pazap-gradient-soft",
       description: `${(stats as any)?.sessions?.total || 0} total configuradas`
     },
     {
