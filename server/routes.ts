@@ -13,6 +13,7 @@ import { z } from "zod";
 import csv from "csv-parser";
 import fs from "fs";
 import { notificationService } from './services/notificationService';
+import { formatBrazilianWhatsAppNumber } from './phoneFormatter';
 import bcrypt from 'bcrypt';
 import "./types/session";
 
@@ -444,7 +445,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Create message records with Brazilian phone formatting
-      const { formatBrazilianWhatsAppNumber } = require('./phoneFormatter');
       const messages = [];
       for (const phone of phones) {
         // Aplicar formatação brasileira e remover @s.whatsapp.net para armazenar
